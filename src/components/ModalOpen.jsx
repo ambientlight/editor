@@ -59,7 +59,7 @@ export default class ModalOpen extends React.Component {
       /* Azure Maps State */
 
       // Subscription Key
-      subscriptionKey: "",
+      subscriptionKey: ENVIRONMENT.subscriptionKey,
 
       // Base Styles
       baseStyleOptions: [
@@ -73,7 +73,7 @@ export default class ModalOpen extends React.Component {
 
       // Tilesets
       tilesets: [{ description: '(Please select)', tilesetId: '' }],
-      selectedTilesetId: "",
+      selectedTilesetId: "" || ENVIRONMENT.tilesetId,
     };
   }
 
@@ -97,12 +97,10 @@ export default class ModalOpen extends React.Component {
   }
 
   onLoadAzureMapsBaseStyle = (baseUrl) => {
-    const { metadata } = this.props.mapStyle || {};
     const azMapsDomain = 'atlas.microsoft.com';
     const azMapsStylingPath = 'styling';
     const azMapsLanguage = 'en-US';
     const azMapsView = 'Auto';
-    const azMapsSubscriptionKey = metadata['maputnik:azuremaps_subscription_key'];
     const apiVersion = '2.0';
 
     this.clearError();
@@ -126,6 +124,8 @@ export default class ModalOpen extends React.Component {
         activeRequestUrl: null
       });
 
+      console.log(this.state.subscriptionKey)
+
       body['sprite'] = body['sprite'].replace('{{azMapsDomain}}', azMapsDomain);
       body['sprite'] = body['sprite'].replace('{{azMapsStylingPath}}', azMapsStylingPath);
       body['sprite'] += `&api-version=${apiVersion}`;
@@ -140,10 +140,10 @@ export default class ModalOpen extends React.Component {
           source.url = source.url.replace('{{azMapsDomain}}', azMapsDomain);
           source.url = source.url.replace('{{azMapsLanguage}}', azMapsLanguage);
           source.url = source.url.replace('{{azMapsView}}', azMapsView);
-          source.url += '&subscription-key=' + azMapsSubscriptionKey;
+          source.url += '&subscription-key=' + this.state.subscriptionKey;
         } else {
           source.tiles = source.tiles.map(url => url.replace('{{azMapsDomain}}', azMapsDomain));
-          source.tiles = source.tiles.map(url => url += '&subscription-key=' + azMapsSubscriptionKey);
+          source.tiles = source.tiles.map(url => url += '&subscription-key=' + this.state.subscriptionKey);
         }
       }
 
@@ -286,13 +286,19 @@ export default class ModalOpen extends React.Component {
   }
 
   onLoadBaseStyle = () => {
-    const { metadata } = this.props.mapStyle || {};
-    if (metadata['maputnik:azuremaps_subscription_key'] === undefined) {
+    const metadata = this.props.mapStyle.metadata || {};
+    const subscriptionKey = metadata['maputnik:azuremaps_subscription_key'] || ENVIRONMENT.subscriptionKey;
+
+    if (!subscriptionKey) {
       this.setState({
         // Not very UX friendly but ..
         error: `Please set your Azure Maps subscription key on the 'Style Setting'.`
       });
       return;
+    } else {
+      this.setState({
+        subscriptionKey
+      })
     }
 
     this.onLoadAzureMapsBaseStyle(this.state.selectedBaseStyle);

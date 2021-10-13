@@ -90,21 +90,21 @@ export default class ModalSettings extends React.Component {
         <FieldString {...inputProps}
           label={"Name"}
           fieldSpec={latest.$root.name}
-          data-wd-key="modal:settings.name" 
+          data-wd-key="modal:settings.name"
           value={this.props.mapStyle.name}
           onChange={this.changeStyleProperty.bind(this, "name")}
         />
         <FieldString {...inputProps}
           label={"Owner"}
           fieldSpec={{doc: "Owner ID of the style. Used by Mapbox or future style APIs."}}
-          data-wd-key="modal:settings.owner" 
+          data-wd-key="modal:settings.owner"
           value={this.props.mapStyle.owner}
           onChange={this.changeStyleProperty.bind(this, "owner")}
         />
         <FieldUrl {...inputProps}
           fieldSpec={latest.$root.sprite}
           label="Sprite URL"
-          data-wd-key="modal:settings.sprite" 
+          data-wd-key="modal:settings.sprite"
           value={this.props.mapStyle.sprite}
           onChange={this.changeStyleProperty.bind(this, "sprite")}
         />
@@ -112,39 +112,39 @@ export default class ModalSettings extends React.Component {
         <FieldUrl {...inputProps}
           label="Glyphs URL"
           fieldSpec={latest.$root.glyphs}
-          data-wd-key="modal:settings.glyphs" 
+          data-wd-key="modal:settings.glyphs"
           value={this.props.mapStyle.glyphs}
           onChange={this.changeStyleProperty.bind(this, "glyphs")}
         />
 
         <FieldString {...inputProps}
-          label={fieldSpecAdditional.maputnik.azuremaps_subscription_key.label} 
+          label={fieldSpecAdditional.maputnik.azuremaps_subscription_key.label}
           fieldSpec={fieldSpecAdditional.maputnik.azuremaps_subscription_key}
-          data-wd-key="modal:settings.maputnik:azuremaps_subscription_key" 
-          value={metadata['maputnik:azuremaps_subscription_key']}
+          data-wd-key="modal:settings.maputnik:azuremaps_subscription_key"
+          value={metadata['maputnik:azuremaps_subscription_key'] || ENVIRONMENT.subscriptionKey}
           onChange={onChangeMetadataProperty.bind(this, "maputnik:azuremaps_subscription_key")}
         />
 
         <FieldString {...inputProps}
-          label={fieldSpecAdditional.maputnik.mapbox_access_token.label} 
+          label={fieldSpecAdditional.maputnik.mapbox_access_token.label}
           fieldSpec={fieldSpecAdditional.maputnik.mapbox_access_token}
-          data-wd-key="modal:settings.maputnik:mapbox_access_token" 
+          data-wd-key="modal:settings.maputnik:mapbox_access_token"
           value={metadata['maputnik:mapbox_access_token']}
           onChange={onChangeMetadataProperty.bind(this, "maputnik:mapbox_access_token")}
         />
 
         <FieldString {...inputProps}
-          label={fieldSpecAdditional.maputnik.maptiler_access_token.label} 
+          label={fieldSpecAdditional.maputnik.maptiler_access_token.label}
           fieldSpec={fieldSpecAdditional.maputnik.maptiler_access_token}
-          data-wd-key="modal:settings.maputnik:openmaptiles_access_token" 
+          data-wd-key="modal:settings.maputnik:openmaptiles_access_token"
           value={metadata['maputnik:openmaptiles_access_token']}
           onChange={onChangeMetadataProperty.bind(this, "maputnik:openmaptiles_access_token")}
         />
 
         <FieldString {...inputProps}
-          label={fieldSpecAdditional.maputnik.thunderforest_access_token.label} 
+          label={fieldSpecAdditional.maputnik.thunderforest_access_token.label}
           fieldSpec={fieldSpecAdditional.maputnik.thunderforest_access_token}
-          data-wd-key="modal:settings.maputnik:thunderforest_access_token" 
+          data-wd-key="modal:settings.maputnik:thunderforest_access_token"
           value={metadata['maputnik:thunderforest_access_token']}
           onChange={onChangeMetadataProperty.bind(this, "maputnik:thunderforest_access_token")}
         />
@@ -247,7 +247,7 @@ export default class ModalSettings extends React.Component {
         <FieldSelect {...inputProps}
           label={fieldSpecAdditional.maputnik.style_renderer.label}
           fieldSpec={fieldSpecAdditional.maputnik.style_renderer}
-          data-wd-key="modal:settings.maputnik:renderer" 
+          data-wd-key="modal:settings.maputnik:renderer"
           options={[
             ['mbgljs', 'MapboxGL JS'],
             ['ol', 'Open Layers (experimental)'],

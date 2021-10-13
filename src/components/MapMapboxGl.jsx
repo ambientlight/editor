@@ -141,8 +141,8 @@ export default class MapMapboxGl extends React.Component {
   componentDidMount() {
     if(!IS_SUPPORTED) return;
 
-    const { metadata } = this.props.mapStyle || {};
-    const azMapsSubscriptionKey = metadata['maputnik:azuremaps_subscription_key'];
+    const metadata = this.props.mapStyle.metadata || {};
+    const azMapsSubscriptionKey = metadata['maputnik:azuremaps_subscription_key'] || ENVIRONMENT.subscriptionKey;
 
     const mapOpts = {
       ...this.props.options,

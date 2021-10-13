@@ -441,7 +441,7 @@ export default class App extends React.Component {
     if (opts.save) {
       this.saveStyle(newStyle);
     }
-       
+
     this.setState({
       mapStyle: newStyle,
       dirtyMapStyle: dirtyMapStyle,
@@ -682,7 +682,7 @@ export default class App extends React.Component {
         onLayerSelect={this.onLayerSelect}
       />
     } else {
-      if (metadata['maputnik:azuremaps_subscription_key']) {
+      if (metadata['maputnik:azuremaps_subscription_key'] || ENVIRONMENT.subscriptionKey) {
         mapElement = <MapMapboxGl {...mapProps}
           onChange={this.onMapChange}
           options={this.state.mapboxGlDebugOptions}
