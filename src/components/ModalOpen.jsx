@@ -136,7 +136,7 @@ export default class ModalOpen extends React.Component {
 
       for (const sourceKey in body['sources']) {
         const source = body.sources[sourceKey];
-        if (sourceKey === 'vectorTiles') {
+        if (sourceKey === 'vectorTiles' || sourceKey === 'satelliteSource') {
           source.url = source.url.replace('{{azMapsDomain}}', azMapsDomain);
           source.url = source.url.replace('{{azMapsLanguage}}', azMapsLanguage);
           source.url = source.url.replace('{{azMapsView}}', azMapsView);
