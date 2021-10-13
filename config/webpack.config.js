@@ -54,6 +54,12 @@ module.exports = {
       poll: (!!process.env.WEBPACK_DEV_SERVER_POLLING ? true : false),
       watch: false
     },
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+      "Access-Control-Allow-Headers": "X-Requested-With, content-type, Authorization",
+      "Access-Control-Expose-Headers": "x-ms-request-id,Server,x-ms-version,Content-Type,Cache-Control,Last-Modified,ETag,x-ms-lease-status,x-ms-blob-type,Content-Length,Date,Transfer-Encoding"
+    }
   },
   plugins: [
     new webpack.NoEmitOnErrorsPlugin(),
