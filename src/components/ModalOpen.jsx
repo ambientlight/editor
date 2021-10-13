@@ -97,11 +97,12 @@ export default class ModalOpen extends React.Component {
   }
 
   onLoadAzureMapsBaseStyle = (baseUrl) => {
+    const { metadata } = this.props.mapStyle || {};
     const azMapsDomain = 'atlas.microsoft.com';
     const azMapsStylingPath = 'styling';
     const azMapsLanguage = 'en-US';
     const azMapsView = 'Auto';
-
+    const azMapsSubscriptionKey = metadata['maputnik:azuremaps_subscription_key'];
     this.clearError();
 
     let canceled;
@@ -128,12 +129,15 @@ export default class ModalOpen extends React.Component {
       body['glyphs'] = body['glyphs'].replace('{{azMapsDomain}}', azMapsDomain);
       body['glyphs'] = body['glyphs'].replace('{{azMapsStylingPath}}', azMapsStylingPath);
       for (const sourceKey in body['sources']) {
+        const source = body.sources[sourceKey];
         if (sourceKey === 'vectorTiles') {
-          body['sources'][sourceKey]['url'] = body['sources'][sourceKey]['url'].replace('{{azMapsDomain}}', azMapsDomain);
-          body['sources'][sourceKey]['url'] = body['sources'][sourceKey]['url'].replace('{{azMapsLanguage}}', azMapsLanguage);
-          body['sources'][sourceKey]['url'] = body['sources'][sourceKey]['url'].replace('{{azMapsView}}', azMapsView);
+          source.url = source.url.replace('{{azMapsDomain}}', azMapsDomain);
+          source.url = source.url.replace('{{azMapsLanguage}}', azMapsLanguage);
+          source.url = source.url.replace('{{azMapsView}}', azMapsView);
+          source.url += '&subscription-key=' + azMapsSubscriptionKey;
         } else {
-          body['sources'][sourceKey]['tiles'] = body['sources'][sourceKey]['tiles'].map(url => url.replace('{{azMapsDomain}}', azMapsDomain));
+          source.tiles = source.tiles.map(url => url.replace('{{azMapsDomain}}', azMapsDomain));
+          source.tiles = source.tiles.map(url => url += '&subscription-key=' + azMapsSubscriptionKey);
         }
       }
 
@@ -276,6 +280,15 @@ export default class ModalOpen extends React.Component {
   }
 
   onLoadBaseStyle = () => {
+    const { metadata } = this.props.mapStyle || {};
+    if (metadata['maputnik:azuremaps_subscription_key'] === undefined) {
+      this.setState({
+        // Not very UX friendly but ..
+        error: `Please set your Azure Maps subscription key on the 'Style Setting'.`
+      });
+      return;
+    }
+
     this.onLoadAzureMapsBaseStyle(this.state.selectedBaseStyle);
   }
 

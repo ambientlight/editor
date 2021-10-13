@@ -18,6 +18,12 @@ const layerListPropTypes = {
 }
 
 function layerPrefix(name) {
+  // is a base microsoft map
+  if (!name.indexOf('microsoft.maps')) {
+    // todo no length validation
+    return 'microsoft ' + name.split('.')[3]
+  }
+  
   return name.replace(' ', '-').replace('_', '-').split('-')[0]
 }
 
@@ -240,6 +246,7 @@ class LayerListContainer extends React.Component {
           additionalProps.ref = this.selectedItemRef;
         }
 
+        const layerId = !layer.id.indexOf('microsoft.maps') ? layer.id.split('.').slice(4).join('.') : layer.id
         const listItem = <LayerListItem
           className={classnames({
             'maputnik-layer-list-item-collapsed': layers.length > 1 && this.isCollapsed(groupPrefix, groupIdx) && idx !== this.props.selectedLayerIndex,
@@ -249,7 +256,7 @@ class LayerListContainer extends React.Component {
           index={idx}
           key={layer.key}
           id={layer.key}
-          layerId={layer.id}
+          layerId={layerId}
           layerIndex={idx}
           layerType={layer.type}
           visibility={(layer.layout || {}).visibility}

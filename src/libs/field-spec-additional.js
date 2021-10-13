@@ -1,5 +1,9 @@
 const spec = {
   maputnik: {
+    azuremaps_subscription_key: {
+      label: "Azure Maps Subscription Key",
+      doc: "Subscription Key for Azure Maps service."
+    },
     mapbox_access_token: {
       label: "Mapbox Access Token",
       doc: "Public access token for Mapbox services."

@@ -118,6 +118,14 @@ export default class ModalSettings extends React.Component {
         />
 
         <FieldString {...inputProps}
+          label={fieldSpecAdditional.maputnik.azuremaps_subscription_key.label} 
+          fieldSpec={fieldSpecAdditional.maputnik.azuremaps_subscription_key}
+          data-wd-key="modal:settings.maputnik:azuremaps_subscription_key" 
+          value={metadata['maputnik:azuremaps_subscription_key']}
+          onChange={onChangeMetadataProperty.bind(this, "maputnik:azuremaps_subscription_key")}
+        />
+
+        <FieldString {...inputProps}
           label={fieldSpecAdditional.maputnik.mapbox_access_token.label} 
           fieldSpec={fieldSpecAdditional.maputnik.mapbox_access_token}
           data-wd-key="modal:settings.maputnik:mapbox_access_token" 

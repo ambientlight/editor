@@ -141,11 +141,32 @@ export default class MapMapboxGl extends React.Component {
   componentDidMount() {
     if(!IS_SUPPORTED) return;
 
+    const { metadata } = this.props.mapStyle || {};
+    const azMapsSubscriptionKey = metadata['maputnik:azuremaps_subscription_key'];
+    const azMapsDomain = 'atlas.microsoft.com';
+    const azMapsStylingPath = 'styling';
+    const azMapsLanguage = 'en-US';
+    const azMapsView = 'Auto';
+
     const mapOpts = {
       ...this.props.options,
       container: this.container,
       style: this.props.mapStyle,
       hash: true,
+      transformRequest: (url, resourceType) => {
+        const requestParams = { url };
+        if (resourceType === "Tile" && 
+            (url.includes('{{azMapsDomain}}') || 
+             url.includes(azMapsDomain))) {
+          requestParams.url = requestParams.url.replace('{{azMapsDomain}}', azMapsDomain);
+          requestParams.url = requestParams.url.replace('{{azMapsStylingPath}}', azMapsStylingPath);
+          requestParams.url = requestParams.url.replace('{{azMapsLanguage}}', azMapsLanguage);
+          requestParams.url = requestParams.url.replace('{{azMapsView}}', azMapsView);
+          requestParams.url += '&subscription-key=' + azMapsSubscriptionKey;
+        }
+
+        return requestParams;
+      },
       maxZoom: 24
     }
 

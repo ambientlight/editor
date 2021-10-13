@@ -682,12 +682,16 @@ export default class App extends React.Component {
         onLayerSelect={this.onLayerSelect}
       />
     } else {
-      mapElement = <MapMapboxGl {...mapProps}
-        onChange={this.onMapChange}
-        options={this.state.mapboxGlDebugOptions}
-        inspectModeEnabled={this.state.mapState === "inspect"}
-        highlightedLayer={this.state.mapStyle.layers[this.state.selectedLayerIndex]}
-        onLayerSelect={this.onLayerSelect} />
+      if (metadata['maputnik:azuremaps_subscription_key']) {
+        mapElement = <MapMapboxGl {...mapProps}
+          onChange={this.onMapChange}
+          options={this.state.mapboxGlDebugOptions}
+          inspectModeEnabled={this.state.mapState === "inspect"}
+          highlightedLayer={this.state.mapStyle.layers[this.state.selectedLayerIndex]}
+          onLayerSelect={this.onLayerSelect} />
+      } else {
+        mapElement = <></>
+      }
     }
 
     let filterName;
@@ -915,6 +919,7 @@ export default class App extends React.Component {
         onOpenToggle={this.toggleModal.bind(this, 'export')}
       />
       <ModalOpen
+        mapStyle={this.state.mapStyle}
         isOpen={this.state.isOpen.open}
         onStyleOpen={this.openStyle}
         onOpenToggle={this.toggleModal.bind(this, 'open')}
