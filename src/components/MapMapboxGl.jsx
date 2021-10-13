@@ -143,10 +143,6 @@ export default class MapMapboxGl extends React.Component {
 
     const { metadata } = this.props.mapStyle || {};
     const azMapsSubscriptionKey = metadata['maputnik:azuremaps_subscription_key'];
-    const azMapsDomain = 'atlas.microsoft.com';
-    const azMapsStylingPath = 'styling';
-    const azMapsLanguage = 'en-US';
-    const azMapsView = 'Auto';
 
     const mapOpts = {
       ...this.props.options,
@@ -155,14 +151,13 @@ export default class MapMapboxGl extends React.Component {
       hash: true,
       transformRequest: (url, resourceType) => {
         const requestParams = { url };
-        if (resourceType === "Tile" && 
-            (url.includes('{{azMapsDomain}}') || 
-             url.includes(azMapsDomain))) {
-          requestParams.url = requestParams.url.replace('{{azMapsDomain}}', azMapsDomain);
-          requestParams.url = requestParams.url.replace('{{azMapsStylingPath}}', azMapsStylingPath);
-          requestParams.url = requestParams.url.replace('{{azMapsLanguage}}', azMapsLanguage);
-          requestParams.url = requestParams.url.replace('{{azMapsView}}', azMapsView);
-          requestParams.url += '&subscription-key=' + azMapsSubscriptionKey;
+        // console.log('url:',url, 'resourceType:', resourceType);
+        if (resourceType === "Tile") {
+            requestParams.url += '&subscription-key=' + azMapsSubscriptionKey;
+        } else if (resourceType === 'SpriteJSON' || resourceType === 'SpriteImage') {
+          // Transformation for Sprite
+        } else if (resourceType === 'Glyphs') {
+          // Transformation for Glyphs
         }
 
         return requestParams;

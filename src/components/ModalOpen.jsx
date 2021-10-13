@@ -103,6 +103,8 @@ export default class ModalOpen extends React.Component {
     const azMapsLanguage = 'en-US';
     const azMapsView = 'Auto';
     const azMapsSubscriptionKey = metadata['maputnik:azuremaps_subscription_key'];
+    const apiVersion = '2.0';
+
     this.clearError();
 
     let canceled;
@@ -126,8 +128,12 @@ export default class ModalOpen extends React.Component {
 
       body['sprite'] = body['sprite'].replace('{{azMapsDomain}}', azMapsDomain);
       body['sprite'] = body['sprite'].replace('{{azMapsStylingPath}}', azMapsStylingPath);
+      body['sprite'] += `&api-version=${apiVersion}`;
+
       body['glyphs'] = body['glyphs'].replace('{{azMapsDomain}}', azMapsDomain);
       body['glyphs'] = body['glyphs'].replace('{{azMapsStylingPath}}', azMapsStylingPath);
+      body['glyphs'] += `?api-version=${apiVersion}`;
+
       for (const sourceKey in body['sources']) {
         const source = body.sources[sourceKey];
         if (sourceKey === 'vectorTiles') {

@@ -36,6 +36,6 @@ export function downloadGlyphsMetadata(urlTemplate, cb) {
 
 export function downloadSpriteMetadata(baseUrl, cb) {
   if(!baseUrl) return cb([])
-  const url = baseUrl + '.json'
+  const url = baseUrl.replace('?', '.json?');
   loadJSON(url, {}, glyphs => cb(Object.keys(glyphs)))
 }
