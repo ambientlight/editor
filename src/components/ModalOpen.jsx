@@ -56,14 +56,16 @@ export default class ModalOpen extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      styleUrl: "",
+      stylesUrl: "",
       /* Azure Maps State */
 
       subscriptionKey: ENVIRONMENT.subscriptionKey,
 
       // Tilesets
       tilesets: [],
-      selectedTilesetId: ""
+      selectedTilesetId: "",
+
+      customStyleset: null
     };
 
     this.resolveTilesets(this.state.subscriptionKey);
@@ -147,12 +149,12 @@ export default class ModalOpen extends React.Component {
     })
   }
 
-  onStyleSelect = (styleUrl) => {
+  onStyleSelect = (stylesUrl) => {
     this.clearError();
 
     let canceled;
 
-    const activeRequest = fetch(styleUrl, {
+    const activeRequest = fetch(stylesUrl, {
       mode: 'cors',
       credentials: "same-origin"
     })
@@ -176,12 +178,12 @@ export default class ModalOpen extends React.Component {
     })
     .catch((err) => {
       this.setState({
-        error: `Failed to load: '${styleUrl}'`,
+        error: `Failed to load: '${stylesUrl}'`,
         activeRequest: null,
         activeRequestUrl: null
       });
       console.error(err);
-      console.warn('Could not open the style URL', styleUrl)
+      console.warn('Could not open the style URL', stylesUrl)
     })
 
     this.setState({
@@ -190,13 +192,13 @@ export default class ModalOpen extends React.Component {
           canceled = true;
         }
       },
-      activeRequestUrl: styleUrl
+      activeRequestUrl: stylesUrl
     })
   }
 
   onSubmitUrl = (e) => {
     e.preventDefault();
-    this.onStyleSelect(this.state.styleUrl);
+    this.onStyleSelect(this.state.stylesUrl);
   }
 
   onUpload = (_, files) => {
@@ -226,16 +228,10 @@ export default class ModalOpen extends React.Component {
 
   onOpenToggle() {
     this.setState({
-      styleUrl: ""
+      stylesUrl: ""
     });
     this.clearError();
     this.props.onOpenToggle();
-  }
-
-  onChangeUrl = (url) => {
-    this.setState({
-      styleUrl: url,
-    });
   }
 
   onChangeBaseStyle = (style) => {
@@ -286,20 +282,50 @@ export default class ModalOpen extends React.Component {
       });
   }
 
+  resolveStyleset = () =>
+    fetch(this.state.stylesUrl)
+      .then(response => response.json())
+      .then(data => this.setState({ customStyleset: data }))
+      .catch(error => {
+        console.error(error);
+        this.setState({ error });
+      });
+
   render() {
     const metadata = this.props.mapStyle.metadata || {};
     const subscriptionKey = this.state.subscriptionKey;
     const tilesetId = this.state.selectedTilesetId;
 
-    const styleOptions = publicStyles.filter(style => this.state.selectedTilesetId ? style.id.includes('indoor') : !style.id.includes('indoor')).map(style => {
-      return <PublicStyle
-        key={style.id}
-        url={style.url}
-        title={style.title}
-        thumbnailUrl={style.thumbnail}
-        onSelect={() => this.onLoadAzureMapsBaseStyleFromGallery(style.id, style.url, subscriptionKey, tilesetId)}
-      />
-    })
+    let styleOptions = [];
+    if(this.state.customStyleset){
+      styleOptions = this.state.customStyleset.styles.filter(style => this.state.selectedTilesetId ? style.name.includes('indoor') : !style.name.includes('indoor')).map(style => {
+        const url = `https://atlas.microsoft.com/styling/styles/${style.name}?api-version=2.0&version=2021-02-01`
+        const matchingPublicStyle = publicStyles.find(publicStyle => publicStyle.id === style.name)
+        const thumbnailUrl = matchingPublicStyle !== undefined
+          ? matchingPublicStyle.thumbnail
+          : style.thumbnail
+            .replace('{{azMapsStylingPath}}', 'https://atlas.microsoft.com/styling')
+            .replace('{{azMapsStylePath}}', 'styles');
+
+        return <PublicStyle
+          key={style.name}
+          url={url}
+          title={style.name}
+          thumbnailUrl={thumbnailUrl}
+          onSelect={() => this.onLoadAzureMapsBaseStyleFromGallery(style.name, url, subscriptionKey, tilesetId)}
+        />
+      })
+    } else {
+      styleOptions = publicStyles.filter(style => this.state.selectedTilesetId ? style.id.includes('indoor') : !style.id.includes('indoor')).map(style => {
+        return <PublicStyle
+          key={style.id}
+          url={style.url}
+          title={style.title}
+          thumbnailUrl={style.thumbnail}
+          onSelect={() => this.onLoadAzureMapsBaseStyleFromGallery(style.id, style.url, subscriptionKey, tilesetId)}
+        />
+      })
+    }
 
     let errorElement;
     if(this.state.error) {
@@ -387,7 +413,7 @@ export default class ModalOpen extends React.Component {
                   type="text"
                   className="maputnik-input"
                   default="Enter URL..."
-                  value={this.state.styleUrl}
+                  value={this.state.stylesUrl}
                   onInput={this.onChangeUrl}
                   onChange={this.onChangeUrl}
                 />
@@ -396,7 +422,7 @@ export default class ModalOpen extends React.Component {
                     data-wd-key="modal:open.url.button"
                     type="submit"
                     className="maputnik-big-button"
-                    disabled={this.state.styleUrl.length < 1}
+                    disabled={this.state.stylesUrl.length < 1}
                   >Load from URL</InputButton>
                 </div>
               </form>
@@ -414,18 +440,17 @@ export default class ModalOpen extends React.Component {
                   type="text"
                   className="maputnik-input"
                   default="https://atlas.microsoft.com/styling/styles?api-version=2.0&version=2021-02-01"
-                  value={this.state.styleUrl}
-                  onInput={this.onChangeUrl}
-                  onChange={this.onChangeUrl}
-                  // TODO: implement style loading from styles endpoint
-                  disabled={true}
+                  value={this.state.stylesUrl}
+                  onInput={(stylesUrl) => this.setState({ stylesUrl })}
+                  onChange={(stylesUrl) => this.setState({ stylesUrl })}
                 />
                 <div>
                   <InputButton
                     data-wd-key="modal:open.url.button"
                     type="submit"
                     className="maputnik-big-button"
-                    disabled={this.state.styleUrl.length < 1}
+                    disabled={this.state.stylesUrl.length < 10}
+                    onClick={() => this.resolveStyleset()}
                   >Load</InputButton>
                 </div>
 
