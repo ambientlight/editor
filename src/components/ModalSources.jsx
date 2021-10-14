@@ -251,7 +251,28 @@ class AddSource extends React.Component {
   }
 }
 
-const wait = (ms) => new Promise((res) => setTimeout(res, ms));
+const progressInitState = {
+  data: {
+    status: "Waiting",
+    operationId: "",
+    udid: ""
+  },
+  conversion: {
+    status: "Waiting",
+    operationId: "",
+    conversionId: ""
+  },
+  dataset: {
+    status: "Waiting",
+    operationId: "",
+    datasetId: ""
+  },
+  tileset: {
+    status: "Waiting",
+    operationId: "",
+    tilesetId: ""
+  }
+};
 
 export default class ModalSources extends React.Component {
   static propTypes = {
@@ -264,29 +285,10 @@ export default class ModalSources extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      subscriptionKey: "",
-      data: {
-        status: "Waiting",
-        operationId: "",
-        udid: ""
-      },
-      conversion: {
-        status: "Waiting",
-        operationId: "",
-        conversionId: ""
-      },
-      dataset: {
-        status: "Waiting",
-        operationId: "",
-        datasetId: ""
-      },
-      tileset: {
-        status: "Waiting",
-        operationId: "",
-        tilesetId: ""
-      }
+      subscriptionKey: ENVIRONMENT.subscriptionKey,
+      subscriptionKeyErrorHidden: false,
+      ...progressInitState
     }
-    this.client = new AzureMapsClientV2(this.state.subscriptionKey);
   }
 
   stripTitle = (source) => {
@@ -295,9 +297,12 @@ export default class ModalSources extends React.Component {
     return strippedSource
   }
 
-  onChangeSubscriptionKey = (key) => {
-    this.setState({ subscriptionKey: key });
-    this.client = new AzureMapsClientV2(key);
+  resetProgressState = () => {
+    this.setState(progressInitState)
+  }
+
+  initClient = (subscriptionKey) => {
+    this.client = new AzureMapsClientV2(subscriptionKey);
   }
 
   upload = async (arrayBuffer) => {
@@ -325,11 +330,12 @@ export default class ModalSources extends React.Component {
   }
 
   onUpload = async (_, files) => {
+    this.resetProgressState();
+    this.initClient(this.state.subscriptionKey);
     const [_e, file] = files[0];
 
     this.setState({ data: { ...this.state.data, status: "Running" }});
     const arrayBuffer = await readFileAsArrayBuffer(file);
-    this.client = new AzureMapsClientV2(this.state.subscriptionKey);
     const { resourceId: udid } = await this.upload(arrayBuffer);
     this.setState({ data: { ...this.state.data, status: "Succeeded", udid }});
 
@@ -344,6 +350,16 @@ export default class ModalSources extends React.Component {
     this.setState({ tileset: { ...this.state.tileset, status: "Running" }});
     const { resourceId: tilesetId} = await this.createTileset(datasetId);
     this.setState({ tileset: { ...this.state.tileset, status: "Succeeded", tilesetId }});
+  }
+
+  componentDidUpdate = (prevProps) => {
+    const metadata = this.props.mapStyle.metadata || {};
+    const prevMetadata = prevProps.mapStyle.metadata || {};
+    if (metadata['maputnik:azuremaps_subscription_key'] !== prevMetadata['maputnik:azuremaps_subscription_key']) {
+      this.setState({
+        subscriptionKey: metadata['maputnik:azuremaps_subscription_key']
+      });
+    }
   }
 
   render() {
@@ -382,18 +398,23 @@ export default class ModalSources extends React.Component {
       onOpenToggle={this.props.onOpenToggle}
       title={'Sources'}
     >
+      {!this.state.subscriptionKey && !this.state.subscriptionKeyErrorHidden &&
+        <div className="maputnik-modal-error">
+          {"Please set your Azure Maps subscription key on the 'Style Setting'."}
+          <a href="#" onClick={() => this.setState({ subscriptionKeyErrorHidden: true })} className="maputnik-modal-error-close">×</a>
+        </div>
+      }
       <section className="maputnik-modal-section">
         <h1>Conversion</h1>
-        <p>Enter your subscription key here...</p>
+        <p>Subscription Key</p>
         <InputString
           aria-label="Subscription key"
           data-wd-key="modal:open.subscriptionkey.input"
           type="text"
           className="maputnik-input"
-          default="Enter subscription key"
+          default="No subscription key found"
           value={this.state.subscriptionKey}
-          onInput={this.onChangeSubscriptionKey}
-          onChange={this.onChangeSubscriptionKey}
+          disabled={true}
         />
         <FileReaderInput onChange={this.onUpload} tabIndex="-1" aria-label="Style file">
           <InputButton className="maputnik-upload-button"><MdFileUpload /> Upload DWG Package</InputButton>
