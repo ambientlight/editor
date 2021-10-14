@@ -206,7 +206,7 @@ export default class App extends React.Component {
 
     const queryObj = url.parse(window.location.href, true).query;
     const isInitialVisit = window.localStorage.getItem('visited') === null;
-    //window.localStorage.setItem('visited', 'true');
+    window.localStorage.setItem('visited', 'true');
 
     this.state = {
       errors: [],
