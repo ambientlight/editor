@@ -50,6 +50,7 @@ export default class ModalOpen extends React.Component {
     isOpen: PropTypes.bool.isRequired,
     onOpenToggle: PropTypes.func.isRequired,
     onStyleOpen: PropTypes.func.isRequired,
+    mapStyle: PropTypes.object
   }
 
   constructor(props) {
