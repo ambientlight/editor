@@ -833,7 +833,10 @@ export default class App extends React.Component {
   render() {
     const layers = this.state.mapStyle.layers || []
     const selectedLayer = layers.length > 0 ? layers[this.state.selectedLayerIndex] : null
-    const metadata = this.state.mapStyle.metadata || {}
+
+    if (!!this.state.sources && Object.keys(this.state.sources).length > 0) {
+      document.querySelector(".loading").style.display = "none";
+    }
 
     const toolbar = <AppToolbar
       renderer={this._getRenderer()}
