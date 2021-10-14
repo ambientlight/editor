@@ -58,10 +58,6 @@ export default class ModalOpen extends React.Component {
     this.state = {
       styleUrl: "",
       /* Azure Maps State */
-
-      // Subscription Key
-      subscriptionKey: ENVIRONMENT.subscriptionKey,
-
       // Base Styles
       baseStyleOptions: [
         { name: '(Please select)', url: '' },
@@ -73,10 +69,11 @@ export default class ModalOpen extends React.Component {
       selectedBaseStyle: "",
 
       // Tilesets
-      tilesets: [{ description: '(Please select)', tilesetId: '' }],
+      tilesets: [],
       selectedTilesetId: "" || ENVIRONMENT.tilesetId,
     };
   }
+
 
   clearError() {
     this.setState({
@@ -97,7 +94,7 @@ export default class ModalOpen extends React.Component {
     }
   }
 
-  onLoadAzureMapsBaseStyle = (baseUrl) => {
+  onLoadAzureMapsBaseStyle = (baseUrl, subscriptionKey) => {
     const azMapsDomain = 'atlas.microsoft.com';
     const azMapsStylingPath = 'styling';
     const azMapsLanguage = 'en-US';
@@ -125,8 +122,6 @@ export default class ModalOpen extends React.Component {
         activeRequestUrl: null
       });
 
-      console.log(this.state.subscriptionKey)
-
       body['sprite'] = body['sprite'].replace('{{azMapsDomain}}', azMapsDomain);
       body['sprite'] = body['sprite'].replace('{{azMapsStylingPath}}', azMapsStylingPath);
       body['sprite'] += `&api-version=${apiVersion}`;
@@ -141,10 +136,10 @@ export default class ModalOpen extends React.Component {
           source.url = source.url.replace('{{azMapsDomain}}', azMapsDomain);
           source.url = source.url.replace('{{azMapsLanguage}}', azMapsLanguage);
           source.url = source.url.replace('{{azMapsView}}', azMapsView);
-          source.url += '&subscription-key=' + this.state.subscriptionKey;
+          source.url += '&subscription-key=' + subscriptionKey;
         } else {
           source.tiles = source.tiles.map(url => url.replace('{{azMapsDomain}}', azMapsDomain));
-          source.tiles = source.tiles.map(url => url += '&subscription-key=' + this.state.subscriptionKey);
+          source.tiles = source.tiles.map(url => url += '&subscription-key=' + subscriptionKey);
         }
       }
 
@@ -268,41 +263,14 @@ export default class ModalOpen extends React.Component {
     });
   }
 
-  onChangeSubscriptionKey = (key) => {
-    this.setState({
-      subscriptionKey: key
-    });
-    fetch(`https://us.atlas.microsoft.com/tilesets?api-version=2.0&subscription-key=${key}`)
-    .then(response => response.json())
-    .then(data => {
-      this.setState({
-        tilesets: [{ description: '(Please select)', tilesetId: '' }, ...data.tilesets]
-      })
-    });
-  }
   onChangeBaseStyle = (style) => {
     this.setState({
       selectedBaseStyle: style
     });
   }
 
-  onLoadBaseStyle = () => {
-    const metadata = this.props.mapStyle.metadata || {};
-    const subscriptionKey = metadata['maputnik:azuremaps_subscription_key'] || ENVIRONMENT.subscriptionKey;
-
-    if (!subscriptionKey) {
-      this.setState({
-        // Not very UX friendly but ..
-        error: `Please set your Azure Maps subscription key on the 'Style Setting'.`
-      });
-      return;
-    } else {
-      this.setState({
-        subscriptionKey
-      })
-    }
-
-    this.onLoadAzureMapsBaseStyle(this.state.selectedBaseStyle);
+  onLoadBaseStyle = (subscriptionKey) => {
+    this.onLoadAzureMapsBaseStyle(this.state.selectedBaseStyle, subscriptionKey);
   }
 
   onChangeTileset = (tilesetId) => {
@@ -315,7 +283,40 @@ export default class ModalOpen extends React.Component {
     this.onLoadAzureMapsCreatorStyle(this.state.selectedTilesetId);
   }
 
+  componentDidUpdate = () => {
+    const metadata = this.props.mapStyle.metadata || {};
+    const subscriptionKey = metadata['maputnik:azuremaps_subscription_key'] || ENVIRONMENT.subscriptionKey;
+    const subKeyErrorMessage = `Please set your Azure Maps subscription key on the 'Style Setting'.`;
+
+    // Not SubscriptionKey
+    if (!subscriptionKey && !this.state.error) {
+      console.log("No SubKey");
+      this.setState({
+        // Not very UX friendly but ..
+        error: subKeyErrorMessage
+      });
+    // Having Subscription but not yet retrieve tilesets data
+    } else if (subscriptionKey && this.state.tilesets.length === 0)  {
+      fetch(`https://us.atlas.microsoft.com/tilesets?api-version=2.0&subscription-key=${subscriptionKey}`)
+      .then(response => response.json())
+      .then(data => {
+        this.setState({
+          tilesets: [{ description: '(Please select)', tilesetId: '' }, ...data.tilesets],
+          error: null
+        })
+      });
+    // In case the error message is not cleared
+    } else if (subscriptionKey && this.state.error === subKeyErrorMessage) {
+      this.setState({
+        error: null
+      })
+    }
+  }
+
   render() {
+    const metadata = this.props.mapStyle.metadata || {};
+    const subscriptionKey = metadata['maputnik:azuremaps_subscription_key'] || ENVIRONMENT.subscriptionKey;
+
     const styleOptions = publicStyles.map(style => {
       return <PublicStyle
         key={style.id}
@@ -345,6 +346,21 @@ export default class ModalOpen extends React.Component {
           title={'Open Style'}
         >
           {errorElement}
+
+          <section className="maputnik-modal-selection">
+            {/* Subscription Key */}
+            <h1>Subscription Key</h1>
+            <InputString
+                aria-label="Subscription key"
+                data-wd-key="modal:open.subscriptionkey.input"
+                type="text"
+                className="maputnik-input"
+                default="No subscription key found"
+                value={subscriptionKey}
+                disabled={true}
+              />
+          </section>
+
           <section className="maputnik-modal-section">
             <h1>Azure Maps Default Style</h1>
              {/* Base Styles  */}
@@ -359,26 +375,14 @@ export default class ModalOpen extends React.Component {
                 data-wd-key="modal:open.basestyle.button"
                 type="button"
                 className="maputnik-big-button"
-                onClick={this.onLoadBaseStyle}
-                disabled={!this.state.selectedBaseStyle}
+                onClick={() => this.onLoadBaseStyle(subscriptionKey)}
+                disabled={!this.state.selectedBaseStyle || !subscriptionKey}
               >Load base style</InputButton>
             </div>
           </section>
 
           <section className="maputnik-modal-section">
             <h1>Azure Maps Creator Style</h1>
-            {/* Subscription Key */}
-            <p>Enter your subscription key here...</p>
-            <InputString
-                aria-label="Subscription key"
-                data-wd-key="modal:open.subscriptionkey.input"
-                type="text"
-                className="maputnik-input"
-                default="Enter subscription key"
-                value={this.state.subscriptionKey}
-                onInput={this.onChangeSubscriptionKey}
-                onChange={this.onChangeSubscriptionKey}
-              />
             {/* Tilesets */}
             <p>Select a indoor map tileset</p>
             <InputSelect
