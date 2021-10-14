@@ -1,18 +1,22 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import {latest} from '@mapbox/mapbox-gl-style-spec'
+import FileReaderInput from 'react-file-reader-input'
+import {MdAddCircleOutline, MdDelete, MdFileUpload, MdCheckCircle, MdRadioButtonUnchecked, MdCached} from 'react-icons/md'
 import Modal from './Modal'
+import InputString from './InputString'
 import InputButton from './InputButton'
-import Block from './Block'
 import FieldString from './FieldString'
 import FieldSelect from './FieldSelect'
 import ModalSourcesTypeEditor from './ModalSourcesTypeEditor'
 
 import style from '../libs/style'
 import { deleteSource, addSource, changeSource } from '../libs/source'
+import { readFileAsArrayBuffer } from '../libs/file'
 import publicSources from '../config/tilesets.json'
+import AzureMapsClientV2 from '../clients/azureMapsClientV2'
+import "./Upload.scss"
 
-import {MdAddCircleOutline, MdDelete} from 'react-icons/md'
 
 class PublicSource extends React.Component {
   static propTypes = {
@@ -197,7 +201,7 @@ class AddSource extends React.Component {
 
   render() {
     // Kind of a hack because the type changes, however maputnik has 1..n
-    // options per type, for example 
+    // options per type, for example
     //
     //  - 'geojson' - 'GeoJSON (URL)' and 'GeoJSON (JSON)'
     //  - 'raster' - 'Raster (TileJSON URL)' and 'Raster (XYZ URL)'
@@ -247,6 +251,8 @@ class AddSource extends React.Component {
   }
 }
 
+const wait = (ms) => new Promise((res) => setTimeout(res, ms));
+
 export default class ModalSources extends React.Component {
   static propTypes = {
     mapStyle: PropTypes.object.isRequired,
@@ -255,10 +261,89 @@ export default class ModalSources extends React.Component {
     onStyleChanged: PropTypes.func.isRequired,
   }
 
+  constructor(props) {
+    super(props)
+    this.state = {
+      subscriptionKey: "2mkP6OLjPeZxRMhXAUI1PfgH-hdMSY_Gd3UpzQoaEj8",
+      data: {
+        status: "Waiting",
+        operationId: "",
+        udid: ""
+      },
+      conversion: {
+        status: "Waiting",
+        operationId: "",
+        conversionId: ""
+      },
+      dataset: {
+        status: "Waiting",
+        operationId: "",
+        datasetId: ""
+      },
+      tileset: {
+        status: "Waiting",
+        operationId: "",
+        tilesetId: ""
+      }
+    }
+    this.client = new AzureMapsClientV2(this.state.subscriptionKey);
+  }
+
   stripTitle(source) {
     const strippedSource = {...source}
     delete strippedSource['title']
     return strippedSource
+  }
+
+  onChangeSubscriptionKey(key) {
+    this.setState({ subscriptionKey: key })
+    this.client = new AzureMapsClientV2(key);
+  }
+
+  upload = async (arrayBuffer) => {
+    const response = await this.client.uploadPackage(arrayBuffer);
+    this.setState({ data: { ...this.state.data, operationId: response.operationId }});
+    return this.client.getOperationStatusUntilSucceed("data", response.operationId, 1000);
+  }
+
+  convert = async (udid) => {
+    const response = await this.client.convertPackage(udid);
+    this.setState({ conversion: { ...this.state.conversion, operationId: response.operationId }});
+    return this.client.getOperationStatusUntilSucceed("conversion", response.operationId, 1000);
+  }
+
+  createDataset = async (conversionid) => {
+    const response = await this.client.createDataset(conversionid);
+    this.setState({ dataset: { ...this.state.dataset, operationId: response.operationId }});
+    return this.client.getOperationStatusUntilSucceed("dataset", response.operationId, 1000);
+  }
+
+  createTileset = async (datasetId) => {
+    const response = await this.client.createTileset(datasetId);
+    this.setState({ tileset: { ...this.state.tileset, operationId: response.operationId }});
+    return this.client.getOperationStatusUntilSucceed("tileset", response.operationId, 1000);
+  }
+
+  onUpload = async (_, files) => {
+    const [_e, file] = files[0];
+
+    this.setState({ data: { ...this.state.data, status: "Running" }});
+    const arrayBuffer = await readFileAsArrayBuffer(file);
+    this.client = new AzureMapsClientV2(this.state.subscriptionKey);
+    const { resourceId: udid } = await this.upload(arrayBuffer);
+    this.setState({ data: { ...this.state.data, status: "Succeeded", udid }});
+
+    this.setState({ conversion: { ...this.state.conversion, status: "Running" }});
+    const { resourceId: conversionId} = await this.convert(udid);
+    this.setState({ conversion: { ...this.state.conversion, status: "Succeeded", conversionId }});
+
+    this.setState({ dataset: { ...this.state.dataset, status: "Running" }});
+    const { resourceId: datasetId} = await this.createDataset(conversionId);
+    this.setState({ dataset: { ...this.state.dataset, status: "Succeeded", datasetId }});
+
+    this.setState({ tileset: { ...this.state.tileset, status: "Running" }});
+    const { resourceId: tilesetId} = await this.createTileset(datasetId);
+    this.setState({ tileset: { ...this.state.tileset, status: "Succeeded", tilesetId }});
   }
 
   render() {
@@ -285,13 +370,46 @@ export default class ModalSources extends React.Component {
       />
     })
 
-    const inputProps = { }
+    const progressIcons = {
+      "Waiting": <MdRadioButtonUnchecked />,
+      "Running": <MdCached className="spinner" />,
+      "Succeeded": <MdCheckCircle />
+    };
+
     return <Modal
       data-wd-key="modal:sources"
       isOpen={this.props.isOpen}
       onOpenToggle={this.props.onOpenToggle}
       title={'Sources'}
     >
+      <section className="maputnik-modal-section">
+        <h1>Conversion</h1>
+        <p>Enter your subscription key here...</p>
+        <InputString
+          aria-label="Subscription key"
+          data-wd-key="modal:open.subscriptionkey.input"
+          type="text"
+          className="maputnik-input"
+          default="Enter subscription key"
+          value={this.state.subscriptionKey}
+          onInput={this.onChangeSubscriptionKey}
+          onChange={this.onChangeSubscriptionKey}
+        />
+        <FileReaderInput onChange={this.onUpload} tabIndex="-1" aria-label="Style file">
+          <InputButton className="maputnik-upload-button"><MdFileUpload /> Upload DWG Package</InputButton>
+        </FileReaderInput>
+        <div className="progress-icons">
+          {progressIcons[this.state.data.status]}
+          {progressIcons[this.state.conversion.status]}
+          {progressIcons[this.state.dataset.status]}
+          {progressIcons[this.state.tileset.status]}
+        </div>
+        {this.state.data.status === "Succeeded" && <div className="information">udid: {this.state.data.udid}</div>}
+        {this.state.conversion.status === "Succeeded" && <div className="information">conversionId: {this.state.conversion.conversionId}</div>}
+        {this.state.dataset.status === "Succeeded" && <div className="information">datasetId: {this.state.dataset.datasetId}</div>}
+        {this.state.tileset.status === "Succeeded" && <div className="information">udid: {this.state.tileset.tilesetId}</div>}
+      </section>
+
       <section className="maputnik-modal-section">
         <h1>Active Sources</h1>
         {activeSources}

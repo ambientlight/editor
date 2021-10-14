@@ -386,7 +386,7 @@ export default class ModalOpen extends React.Component {
             {/* Tilesets */}
             <p>Select a indoor map tileset</p>
             <InputSelect
-              options={this.state.tilesets.map(t => [t.tilesetId, t.description])}
+              options={this.state.tilesets.map(t => [t.tilesetId, t.description || t.tilesetId])}
               onChange={this.onChangeTileset}
               value={this.state.selectedTilesetId}
             />
