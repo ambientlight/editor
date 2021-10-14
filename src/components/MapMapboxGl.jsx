@@ -13,6 +13,7 @@ import { colorHighlightedLayer } from '../libs/highlight'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import '../mapboxgl.css'
 import '../libs/mapbox-rtl'
+import style from '../libs/style'
 
 
 const IS_SUPPORTED = MapboxGl.supported();
@@ -91,8 +92,10 @@ export default class MapMapboxGl extends React.Component {
 
     //Mapbox GL now does diffing natively so we don't need to calculate
     //the necessary operations ourselves!
+    const subscriptionKey = metadata['maputnik:azuremaps_subscription_key'] || ENVIRONMENT.subscriptionKey;
+    const mapStyle = style.isAzureMapsStyle(props.mapStyle) ? style.toAzureMapsStyle(props.mapStyle, subscriptionKey): props.mapStyle
     this.state.map.setStyle(
-      this.props.replaceAccessTokens(props.mapStyle),
+      this.props.replaceAccessTokens(mapStyle),
       {diff: true}
     )
   }
@@ -147,23 +150,23 @@ export default class MapMapboxGl extends React.Component {
     const mapOpts = {
       ...this.props.options,
       container: this.container,
-      style: this.props.mapStyle,
+      style: style.isAzureMapsStyle(this.props.mapStyle) ? style.toAzureMapsStyle(this.props.mapStyle, azMapsSubscriptionKey): this.props.mapStyle,
       hash: true,
-      transformRequest: (url, resourceType) => {
-        const requestParams = { url };
-        // console.log('url:',url, 'resourceType:', resourceType);
-        if (resourceType === "Tile") {
-            requestParams.url += '&subscription-key=' + azMapsSubscriptionKey;
-        } else if (resourceType === 'SpriteJSON' || resourceType === 'SpriteImage') {
-          // Transformation for Sprite
-        } else if (resourceType === 'Glyphs') {
-          // Transformation for Glyphs
-        }
-
-        return requestParams;
-      },
       maxZoom: 24
-    }
+    };
+
+    mapOpts.transformRequest = (url, resourceType) => {
+      const requestParams = { url };
+      // console.log('url:',url, 'resourceType:', resourceType);
+      if (resourceType === "Tile" && requestParams.url.includes(style.azMapsDomain)) {
+          requestParams.url += '&subscription-key=' + azMapsSubscriptionKey;
+      } else if (resourceType === 'SpriteJSON' || resourceType === 'SpriteImage') {
+        // Transformation for Sprite
+      } else if (resourceType === 'Glyphs') {
+        // Transformation for Glyphs
+      }
+      return requestParams;
+    };
 
     const map = new MapboxGl.Map(mapOpts);
 

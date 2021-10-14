@@ -1,5 +1,6 @@
 import deref from '@mapbox/mapbox-gl-style-spec/deref'
 import tokens from '../config/tokens.json'
+import cloneDeep from 'lodash.clonedeep'
 
 // Empty style is always used if no style could be restored or fetched
 const emptyStyle = ensureStyleValidity({
@@ -127,6 +128,64 @@ function stripAccessTokens(mapStyle) {
   };
 }
 
+/** Azure Maps Parameters */
+const azMapsDomain = 'atlas.microsoft.com';
+const azMapsStylingPath = 'styling';
+const azMapsLanguage = 'en-US';
+const azMapsView = 'Auto';
+const apiVersion = '2.0';
+
+function isAzureMapsStyle(mapStyle) {
+  const styleId = mapStyle.id;
+  console.log('StyleId: ',styleId);
+  return styleId && styleId.startsWith('azmaps-');
+}
+
+function toAzureMapsSprite(sprite) {
+  if (sprite.includes('{{azMapsDomain}}') === false) return sprite;
+  return sprite.replace('{{azMapsDomain}}', azMapsDomain)
+               .replace('{{azMapsStylingPath}}', azMapsStylingPath)
+               +`&api-version=${apiVersion}`;
+}
+
+function toAzureMapGlyphs(glyphs) {
+  if (glyphs.includes('{{azMapsDomain}}') === false) return glyphs;
+  return glyphs.replace('{{azMapsDomain}}', azMapsDomain)
+               .replace('{{azMapsStylingPath}}', azMapsStylingPath)
+               +`?api-version=${apiVersion}`;
+}
+
+function toAzureMapSourceUrl(sourceUrl, subscriptionKey) {
+  if (sourceUrl.includes('{{azMapsDomain}}') === false) return sourceUrl;
+  return sourceUrl.replace('{{azMapsDomain}}', azMapsDomain)
+                  .replace('{{azMapsLanguage}}', azMapsLanguage)
+                  .replace('{{azMapsView}}', azMapsView)
+                  +'&subscription-key=' + subscriptionKey;
+}
+
+function toAzureMapsStyle (originalStyle, subscriptionKey) {
+
+  const style = cloneDeep(originalStyle);
+
+  style['sprite'] = toAzureMapsSprite(style['sprite']);
+  style['glyphs'] = toAzureMapGlyphs(style['glyphs']);
+
+  for (const sourceKey in style['sources']) {
+    const source = style.sources[sourceKey];
+    if (sourceKey === 'vectorTiles' || sourceKey === 'satelliteSource') {
+      source.url = toAzureMapSourceUrl(source.url, subscriptionKey)
+    } else {
+      source.tiles = source.tiles.map(url => toAzureMapSourceUrl(url, subscriptionKey));
+    }
+  }
+
+  return style;
+}
+
+function generateAzureMapsStyleId(baseStyleName) {
+  return 'azmaps-' + baseStyleName[0].toLowerCase() + baseStyleName.slice(1) + '-' + generateId();
+}
+
 export default {
   ensureStyleValidity,
   emptyStyle,
@@ -135,4 +194,11 @@ export default {
   getAccessToken,
   replaceAccessTokens,
   stripAccessTokens,
+  isAzureMapsStyle,
+  toAzureMapsStyle,
+  generateAzureMapsStyleId,
+  toAzureMapsSprite,
+  toAzureMapGlyphs,
+  toAzureMapSourceUrl,
+  azMapsDomain,
 }

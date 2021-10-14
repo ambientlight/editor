@@ -45,6 +45,13 @@ class PublicStyle extends React.Component {
   }
 }
 
+const azureMapsStyles = {
+  Road: 'https://atlas.microsoft.com/styling/styles/road?api-version=2.0&version=2021-02-01',
+  Satellite: 'https://atlas.microsoft.com/styling/styles/satellite?api-version=2.0&version=2021-02-01',
+  GrayScale: 'https://atlas.microsoft.com/styling/styles/grayscale_light?api-version=2.0&version=2021-02-01',
+  Blank: 'https://atlas.microsoft.com/styling/styles/blank?api-version=2.0&version=2021-02-01'
+}
+
 export default class ModalOpen extends React.Component {
   static propTypes = {
     isOpen: PropTypes.bool.isRequired,
@@ -58,14 +65,8 @@ export default class ModalOpen extends React.Component {
     this.state = {
       styleUrl: "",
       /* Azure Maps State */
-      // Base Styles
-      baseStyleOptions: [
-        { name: '(Please select)', url: '' },
-        { name: 'Road', url: 'https://atlas.microsoft.com/styling/styles/road?api-version=2.0&version=2021-02-01' },
-        { name: 'Satellite', url: 'https://atlas.microsoft.com/styling/styles/satellite?api-version=2.0&version=2021-02-01'},
-        { name: 'GrayScale', url: 'https://atlas.microsoft.com/styling/styles/grayscale_light?api-version=2.0&version=2021-02-01' },
-        { name: 'Blank', url: 'https://atlas.microsoft.com/styling/styles/blank?api-version=2.0&version=2021-02-01' }
-      ],
+
+      // Selected style name
       selectedBaseStyle: "",
 
       // Tilesets
@@ -94,17 +95,13 @@ export default class ModalOpen extends React.Component {
     }
   }
 
-  onLoadAzureMapsBaseStyle = (baseUrl, subscriptionKey) => {
-    const azMapsDomain = 'atlas.microsoft.com';
-    const azMapsStylingPath = 'styling';
-    const azMapsLanguage = 'en-US';
-    const azMapsView = 'Auto';
-    const apiVersion = '2.0';
+  onLoadAzureMapsBaseStyle = (azureStyleName, subscriptionKey) => {
 
     this.clearError();
 
     let canceled;
 
+    const baseUrl = azureMapsStyles[azureStyleName];
     const activeRequest = fetch(baseUrl, {
       mode: 'cors',
       credentials: "same-origin"
@@ -122,26 +119,7 @@ export default class ModalOpen extends React.Component {
         activeRequestUrl: null
       });
 
-      body['sprite'] = body['sprite'].replace('{{azMapsDomain}}', azMapsDomain);
-      body['sprite'] = body['sprite'].replace('{{azMapsStylingPath}}', azMapsStylingPath);
-      body['sprite'] += `&api-version=${apiVersion}`;
-
-      body['glyphs'] = body['glyphs'].replace('{{azMapsDomain}}', azMapsDomain);
-      body['glyphs'] = body['glyphs'].replace('{{azMapsStylingPath}}', azMapsStylingPath);
-      body['glyphs'] += `?api-version=${apiVersion}`;
-
-      for (const sourceKey in body['sources']) {
-        const source = body.sources[sourceKey];
-        if (sourceKey === 'vectorTiles' || sourceKey === 'satelliteSource') {
-          source.url = source.url.replace('{{azMapsDomain}}', azMapsDomain);
-          source.url = source.url.replace('{{azMapsLanguage}}', azMapsLanguage);
-          source.url = source.url.replace('{{azMapsView}}', azMapsView);
-          source.url += '&subscription-key=' + subscriptionKey;
-        } else {
-          source.tiles = source.tiles.map(url => url.replace('{{azMapsDomain}}', azMapsDomain));
-          source.tiles = source.tiles.map(url => url += '&subscription-key=' + subscriptionKey);
-        }
-      }
+      body['id'] = style.generateAzureMapsStyleId(azureStyleName);
 
       // fill back the subscription key in style metadata as it will be used as a state in root App component
       body['metadata'] = {
@@ -150,6 +128,7 @@ export default class ModalOpen extends React.Component {
       }
 
       const mapStyle = style.ensureStyleValidity(body)
+
       console.log('Loaded style ', mapStyle.id)
       this.props.onStyleOpen(mapStyle)
       this.onOpenToggle()
@@ -372,7 +351,7 @@ export default class ModalOpen extends React.Component {
              {/* Base Styles  */}
             <p>Select a base style</p>
             <InputSelect
-              options={this.state.baseStyleOptions.map(o => [o.url, o.name])}
+              options={[['', '(Please select)'],...Object.keys(azureMapsStyles).map(name => [name, name])]}
               onChange={this.onChangeBaseStyle}
               value={this.state.selectedBaseStyle}
             />

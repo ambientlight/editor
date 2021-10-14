@@ -287,12 +287,20 @@ export default class App extends React.Component {
     const accessToken = metadata['maputnik:openmaptiles_access_token'] || tokens.openmaptiles
 
     let glyphUrl = (typeof urlTemplate === 'string')? urlTemplate.replace('{key}', accessToken): urlTemplate;
+
+    // Replace placeholder for Azure Maps
+    glyphUrl = style.toAzureMapGlyphs(glyphUrl);
+
     downloadGlyphsMetadata(glyphUrl, fonts => {
       this.setState({ spec: updateRootSpec(this.state.spec, 'glyphs', fonts)})
     })
   }
 
   updateIcons(baseUrl) {
+
+    // Replace placeholder for Azure Maps
+    baseUrl = style.toAzureMapsSprite(baseUrl);
+
     downloadSpriteMetadata(baseUrl, icons => {
       this.setState({ spec: updateRootSpec(this.state.spec, 'sprite', icons)})
     })
@@ -575,6 +583,9 @@ export default class App extends React.Component {
 
   fetchSources() {
     const sourceList = {};
+    const metadata = this.state.mapStyle.metadata || {};
+    const azMapsSubscriptionKey = metadata['maputnik:azuremaps_subscription_key'] || ENVIRONMENT.subscriptionKey;
+    const isAzureMapStyle = style.isAzureMapsStyle(this.state.mapStyle);
 
     for(let [key, val] of Object.entries(this.state.mapStyle.sources)) {
       if(
@@ -598,6 +609,10 @@ export default class App extends React.Component {
           url = setFetchAccessToken(url, this.state.mapStyle)
         } catch(err) {
           console.warn("Failed to setFetchAccessToken: ", err);
+        }
+
+        if (isAzureMapStyle) {
+          url = style.toAzureMapSourceUrl(url, azMapsSubscriptionKey);
         }
 
         fetch(url, {
