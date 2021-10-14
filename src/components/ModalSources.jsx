@@ -289,14 +289,14 @@ export default class ModalSources extends React.Component {
     this.client = new AzureMapsClientV2(this.state.subscriptionKey);
   }
 
-  stripTitle(source) {
+  stripTitle = (source) => {
     const strippedSource = {...source}
     delete strippedSource['title']
     return strippedSource
   }
 
-  onChangeSubscriptionKey(key) {
-    this.setState({ subscriptionKey: key })
+  onChangeSubscriptionKey = (key) => {
+    this.setState({ subscriptionKey: key });
     this.client = new AzureMapsClientV2(key);
   }
 
@@ -407,7 +407,7 @@ export default class ModalSources extends React.Component {
         {this.state.data.status === "Succeeded" && <div className="information">udid: {this.state.data.udid}</div>}
         {this.state.conversion.status === "Succeeded" && <div className="information">conversionId: {this.state.conversion.conversionId}</div>}
         {this.state.dataset.status === "Succeeded" && <div className="information">datasetId: {this.state.dataset.datasetId}</div>}
-        {this.state.tileset.status === "Succeeded" && <div className="information">udid: {this.state.tileset.tilesetId}</div>}
+        {this.state.tileset.status === "Succeeded" && <div className="information">tilesetId: {this.state.tileset.tilesetId}</div>}
       </section>
 
       <section className="maputnik-modal-section">
