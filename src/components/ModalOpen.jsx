@@ -143,6 +143,12 @@ export default class ModalOpen extends React.Component {
         }
       }
 
+      // fill back the subscription key in style metadata as it will be used as a state in root App component
+      body['metadata'] = {
+        ...(body['metadata'] || {}),
+        'maputnik:azuremaps_subscription_key': subscriptionKey
+      }
+
       const mapStyle = style.ensureStyleValidity(body)
       console.log('Loaded style ', mapStyle.id)
       this.props.onStyleOpen(mapStyle)
