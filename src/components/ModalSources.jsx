@@ -264,7 +264,7 @@ export default class ModalSources extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      subscriptionKey: "2mkP6OLjPeZxRMhXAUI1PfgH-hdMSY_Gd3UpzQoaEj8",
+      subscriptionKey: "",
       data: {
         status: "Waiting",
         operationId: "",
