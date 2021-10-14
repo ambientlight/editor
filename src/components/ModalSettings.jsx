@@ -125,30 +125,6 @@ export default class ModalSettings extends React.Component {
           onChange={onChangeMetadataProperty.bind(this, "maputnik:azuremaps_subscription_key")}
         />
 
-        <FieldString {...inputProps}
-          label={fieldSpecAdditional.maputnik.mapbox_access_token.label}
-          fieldSpec={fieldSpecAdditional.maputnik.mapbox_access_token}
-          data-wd-key="modal:settings.maputnik:mapbox_access_token"
-          value={metadata['maputnik:mapbox_access_token']}
-          onChange={onChangeMetadataProperty.bind(this, "maputnik:mapbox_access_token")}
-        />
-
-        <FieldString {...inputProps}
-          label={fieldSpecAdditional.maputnik.maptiler_access_token.label}
-          fieldSpec={fieldSpecAdditional.maputnik.maptiler_access_token}
-          data-wd-key="modal:settings.maputnik:openmaptiles_access_token"
-          value={metadata['maputnik:openmaptiles_access_token']}
-          onChange={onChangeMetadataProperty.bind(this, "maputnik:openmaptiles_access_token")}
-        />
-
-        <FieldString {...inputProps}
-          label={fieldSpecAdditional.maputnik.thunderforest_access_token.label}
-          fieldSpec={fieldSpecAdditional.maputnik.thunderforest_access_token}
-          data-wd-key="modal:settings.maputnik:thunderforest_access_token"
-          value={metadata['maputnik:thunderforest_access_token']}
-          onChange={onChangeMetadataProperty.bind(this, "maputnik:thunderforest_access_token")}
-        />
-
         <FieldArray
           label={"Center"}
           fieldSpec={latest.$root.center}

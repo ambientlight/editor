@@ -437,9 +437,9 @@ export default class ModalOpen extends React.Component {
           </section>
 
           <section className="maputnik-modal-section maputnik-modal-section--shrink">
-            <h1>Gallery Styles</h1>
+            <h1>Azure Maps Styles</h1>
             <p>
-              Open one of the publicly available styles to start from.
+              Select a base style.
             </p>
             <div className="maputnik-style-gallery-container">
             {styleOptions}
