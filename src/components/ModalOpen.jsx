@@ -256,8 +256,18 @@ export default class ModalOpen extends React.Component {
     this.resolveTilesets(subscriptionKey);
   }
 
+  componentDidUpdate = () => {
+    const metadata = this.props.mapStyle.metadata || {};
+    const subscriptionKey = metadata['maputnik:azuremaps_subscription_key'] || ENVIRONMENT.subscriptionKey;
+
+    // hotfix
+    if(this.state.subscriptionKey !== subscriptionKey){
+      this.setState({ subscriptionKey })
+      this.resolveTilesets(subscriptionKey);
+    }
+  }
+
   resolveTilesets = (key) => {
-    console.log(`tring to resolve tilesets: ${key}`)
     const subscriptionKey = key.trim()
     if(subscriptionKey.length != 43){ return; }
 
@@ -338,7 +348,7 @@ export default class ModalOpen extends React.Component {
               />
           </section>
 
-          <div style={ !subscriptionKey ? { filter: 'opacity(0.2)', pointerEvents: 'none' } : {}}>
+          <div style={ subscriptionKey && subscriptionKey.length == 43 ? {} : { filter: 'opacity(0.2)', pointerEvents: 'none' } }>
             <section className="maputnik-modal-section">
               <h1>Step 2: (Optional) Add Indoor Tileset</h1>
               {/* Tilesets */}

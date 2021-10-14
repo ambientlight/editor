@@ -17,6 +17,7 @@ import style from '../libs/style'
 
 
 const IS_SUPPORTED = MapboxGl.supported();
+let transformSubscriptionKey = '';
 
 function renderPopup(popup, mountNode) {
   ReactDOM.render(popup, mountNode);
@@ -95,6 +96,7 @@ export default class MapMapboxGl extends React.Component {
     const subscriptionKey = metadata['maputnik:azuremaps_subscription_key'] || ENVIRONMENT.subscriptionKey;
     const tilesetId = metadata['maputnik:azuremaps_tileset_id'];
     const bbox = metadata['maputnik:azuremaps_tileset_bbox'];
+    transformSubscriptionKey = subscriptionKey;
 
     const mapStyle = style.isAzureMapsStyle(props.mapStyle) ? style.toAzureMapsStyle(props.mapStyle, subscriptionKey, tilesetId): props.mapStyle
     this.state.map.setStyle(
@@ -157,23 +159,22 @@ export default class MapMapboxGl extends React.Component {
     if(!IS_SUPPORTED) return;
 
     const metadata = this.props.mapStyle.metadata || {};
-    const azMapsSubscriptionKey = metadata['maputnik:azuremaps_subscription_key'] || ENVIRONMENT.subscriptionKey;
     const tilesetId = metadata['maputnik:azuremaps_tileset_id'];
     const bbox = metadata['maputnik:azuremaps_tileset_bbox'];
+    transformSubscriptionKey = metadata['maputnik:azuremaps_subscription_key'] || ENVIRONMENT.subscriptionKey
 
     const mapOpts = {
       ...this.props.options,
       container: this.container,
-      style: style.isAzureMapsStyle(this.props.mapStyle) ? style.toAzureMapsStyle(this.props.mapStyle, azMapsSubscriptionKey, tilesetId): this.props.mapStyle,
+      style: style.isAzureMapsStyle(this.props.mapStyle) ? style.toAzureMapsStyle(this.props.mapStyle, transformSubscriptionKey, tilesetId): this.props.mapStyle,
       hash: true,
       maxZoom: 24
     };
 
     mapOpts.transformRequest = (url, resourceType) => {
       const requestParams = { url };
-      // console.log('url:',url, 'resourceType:', resourceType);
-      if (resourceType === "Tile" && (requestParams.url.includes(style.globalAzMapsDomain))) {
-          requestParams.url += '&subscription-key=' + azMapsSubscriptionKey;
+      if (resourceType === "Tile" && transformSubscriptionKey && (requestParams.url.includes(style.globalAzMapsDomain) && !requestParams.url.includes('subscription-key'))) {
+        requestParams.url += '&subscription-key=' + transformSubscriptionKey;
       } else if (resourceType === 'SpriteJSON' || resourceType === 'SpriteImage') {
         // Transformation for Sprite
       } else if (resourceType === 'Glyphs') {
