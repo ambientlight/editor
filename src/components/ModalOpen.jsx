@@ -158,6 +158,13 @@ export default class ModalOpen extends React.Component {
   }
 
   onStyleSelect = (styleUrl) => {
+    const metadata = this.props.mapStyle.metadata || {};
+    const subscriptionKey = metadata['maputnik:azuremaps_subscription_key'] || ENVIRONMENT.subscriptionKey;
+    const azMapsDomain = 'atlas.microsoft.com';
+    const azMapsStylingPath = 'styling';
+    const azMapsLanguage = 'en-US';
+    const azMapsView = 'Auto';
+    const apiVersion = '2.0';
     this.clearError();
 
     let canceled;
@@ -179,6 +186,27 @@ export default class ModalOpen extends React.Component {
         activeRequestUrl: null
       });
 
+      body['sprite'] = body['sprite'].replace('{{azMapsDomain}}', azMapsDomain);
+      body['sprite'] = body['sprite'].replace('{{azMapsStylingPath}}', azMapsStylingPath);
+      body['sprite'] += `&api-version=${apiVersion}`;
+
+      body['glyphs'] = body['glyphs'].replace('{{azMapsDomain}}', azMapsDomain);
+      body['glyphs'] = body['glyphs'].replace('{{azMapsStylingPath}}', azMapsStylingPath);
+      body['glyphs'] += `?api-version=${apiVersion}`;
+
+      for (const sourceKey in body['sources']) {
+        const source = body.sources[sourceKey];
+        if (sourceKey === 'vectorTiles' || sourceKey === 'satelliteSource') {
+          source.url = source.url.replace('{{azMapsDomain}}', azMapsDomain);
+          source.url = source.url.replace('{{azMapsLanguage}}', azMapsLanguage);
+          source.url = source.url.replace('{{azMapsView}}', azMapsView);
+          source.url += '&subscription-key=' + subscriptionKey;
+        } else {
+          source.tiles = source.tiles.map(url => url.replace('{{azMapsDomain}}', azMapsDomain));
+          source.tiles = source.tiles.map(url => url += '&subscription-key=' + subscriptionKey);
+        }
+      }
+      
       const mapStyle = style.ensureStyleValidity(body)
       console.log('Loaded style ', mapStyle.id)
       this.props.onStyleOpen(mapStyle)
