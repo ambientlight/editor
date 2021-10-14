@@ -205,6 +205,8 @@ export default class App extends React.Component {
     }
 
     const queryObj = url.parse(window.location.href, true).query;
+    const isInitialVisit = window.localStorage.getItem('visited') === null;
+    //window.localStorage.setItem('visited', 'true');
 
     this.state = {
       errors: [],
@@ -225,13 +227,14 @@ export default class App extends React.Component {
       isOpen: {
         settings: false,
         sources: false,
-        open: false,
+        open: isInitialVisit,
         shortcuts: false,
         export: false,
         // TODO: Disabled for now, this should be opened on the Nth visit to the editor
         survey: false,
         debug: false,
       },
+      isInitialVisit,
       mapboxGlDebugOptions: {
         showTileBoundaries: false,
         showCollisionBoxes: false,
@@ -939,6 +942,7 @@ export default class App extends React.Component {
       <ModalOpen
         mapStyle={this.state.mapStyle}
         isOpen={this.state.isOpen.open}
+        isInitialVisit={this.state.isInitialVisit}
         onStyleOpen={this.openStyle}
         onOpenToggle={this.toggleModal.bind(this, 'open')}
       />

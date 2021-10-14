@@ -79,11 +79,13 @@ export default class InputString extends React.Component {
       onBlur: () => {
         if(this.state.value!==this.props.value) {
           this.setState({editing: false});
-          this.props.onChange(this.state.value);
+          if(typeof this.props.onChange === 'function'){
+            this.props.onChange(this.state.value);
+          }
         }
       },
       onKeyDown: (e) => {
-        if (e.keyCode === 13) {
+        if (e.keyCode === 13 && typeof this.props.onChange === 'function') {
           this.props.onChange(this.state.value);
         }
       },

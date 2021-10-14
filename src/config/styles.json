@@ -6,33 +6,69 @@
     "thumbnail": "https://imgur.com/5trR5mV.png"
   },
   {
+    "id": "road_indoor",
+    "title": "road_indoor",
+    "url": "https://atlas.microsoft.com/styling/styles/road_indoor?api-version=2.0&version=2021-02-01",
+    "thumbnail": "https://imgur.com/5trR5mV.png"
+  },
+  {
     "id": "satellite",
     "title": "satellite",
     "url": "https://atlas.microsoft.com/styling/styles/satellite?api-version=2.0&version=2021-02-01",
     "thumbnail": "https://imgur.com/y4m6Rul.png"
   },
   {
+    "id": "satellite_indoor",
+    "title": "satellite_indoor",
+    "url": "https://atlas.microsoft.com/styling/styles/satellite_indoor?api-version=2.0&version=2021-02-01",
+    "thumbnail": "https://imgur.com/y4m6Rul.png"
+  },
+  {
     "id": "grayscale_dark",
-    "title": "Grayscale Dark",
+    "title": "grayscale_dark",
     "url": "https://atlas.microsoft.com/styling/styles/grayscale_dark?api-version=2.0&version=2021-02-01",
     "thumbnail": "https://imgur.com/IAx1cBe.png"
   },
   {
+    "id": "grayscale_dark_indoor",
+    "title": "grayscale_dark_indoor",
+    "url": "https://atlas.microsoft.com/styling/styles/grayscale_dark_indoor?api-version=2.0&version=2021-02-01",
+    "thumbnail": "https://imgur.com/IAx1cBe.png"
+  },
+  {
     "id": "grayscale_light",
-    "title": "Grayscale Light",
+    "title": "grayscale_light",
     "url": "https://atlas.microsoft.com/styling/styles/grayscale_light?api-version=2.0&version=2021-02-01",
     "thumbnail": "https://imgur.com/2SFc0Mi.png"
   },
   {
+    "id": "grayscale_light_indoor",
+    "title": "grayscale_light_indoor",
+    "url": "https://atlas.microsoft.com/styling/styles/grayscale_light_indoor?api-version=2.0&version=2021-02-01",
+    "thumbnail": "https://imgur.com/2SFc0Mi.png"
+  },
+  {
     "id": "highcontrast_dark",
-    "title": "High Contrast Dark",
+    "title": "highcontrast_dark",
     "url": "https://atlas.microsoft.com/styling/styles/high_contrast_dark?api-version=2.0&version=2021-02-01",
     "thumbnail": "https://imgur.com/dCwN8Uk.png"
   },
   {
+    "id": "highcontrast_dark_indoor",
+    "title": "highcontrast_dark_indoor",
+    "url": "https://atlas.microsoft.com/styling/styles/high_contrast_dark_indoor?api-version=2.0&version=2021-02-01",
+    "thumbnail": "https://imgur.com/dCwN8Uk.png"
+  },
+  {
     "id": "high_contrast_light",
-    "title": "High Contrast Light",
+    "title": "high_contrast_light",
     "url": "https://atlas.microsoft.com/styling/styles/high_contrast_light?api-version=2.0&version=2021-02-01",
+    "thumbnail": "https://imgur.com/796LduG.png"
+  },
+  {
+    "id": "high_contrast_light_indoor",
+    "title": "high_contrast_light_indoor",
+    "url": "https://atlas.microsoft.com/styling/styles/high_contrast_light_indoor?api-version=2.0&version=2021-02-01",
     "thumbnail": "https://imgur.com/796LduG.png"
   },
   {

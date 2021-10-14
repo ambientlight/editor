@@ -93,11 +93,23 @@ export default class MapMapboxGl extends React.Component {
     //Mapbox GL now does diffing natively so we don't need to calculate
     //the necessary operations ourselves!
     const subscriptionKey = metadata['maputnik:azuremaps_subscription_key'] || ENVIRONMENT.subscriptionKey;
-    const mapStyle = style.isAzureMapsStyle(props.mapStyle) ? style.toAzureMapsStyle(props.mapStyle, subscriptionKey): props.mapStyle
+    const tilesetId = metadata['maputnik:azuremaps_tileset_id'];
+    const bbox = metadata['maputnik:azuremaps_tileset_bbox'];
+
+    const mapStyle = style.isAzureMapsStyle(props.mapStyle) ? style.toAzureMapsStyle(props.mapStyle, subscriptionKey, tilesetId): props.mapStyle
     this.state.map.setStyle(
       this.props.replaceAccessTokens(mapStyle),
       {diff: true}
     )
+
+    if(bbox){
+      this.state.map.fitBounds([
+        [bbox[0], bbox[1]],
+        [bbox[2], bbox[3]]
+      ], {
+        zoom: 19
+      })
+    }
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -146,11 +158,13 @@ export default class MapMapboxGl extends React.Component {
 
     const metadata = this.props.mapStyle.metadata || {};
     const azMapsSubscriptionKey = metadata['maputnik:azuremaps_subscription_key'] || ENVIRONMENT.subscriptionKey;
+    const tilesetId = metadata['maputnik:azuremaps_tileset_id'];
+    const bbox = metadata['maputnik:azuremaps_tileset_bbox'];
 
     const mapOpts = {
       ...this.props.options,
       container: this.container,
-      style: style.isAzureMapsStyle(this.props.mapStyle) ? style.toAzureMapsStyle(this.props.mapStyle, azMapsSubscriptionKey): this.props.mapStyle,
+      style: style.isAzureMapsStyle(this.props.mapStyle) ? style.toAzureMapsStyle(this.props.mapStyle, azMapsSubscriptionKey, tilesetId): this.props.mapStyle,
       hash: true,
       maxZoom: 24
     };
@@ -158,7 +172,7 @@ export default class MapMapboxGl extends React.Component {
     mapOpts.transformRequest = (url, resourceType) => {
       const requestParams = { url };
       // console.log('url:',url, 'resourceType:', resourceType);
-      if (resourceType === "Tile" && requestParams.url.includes(style.azMapsDomain)) {
+      if (resourceType === "Tile" && (requestParams.url.includes(style.globalAzMapsDomain))) {
           requestParams.url += '&subscription-key=' + azMapsSubscriptionKey;
       } else if (resourceType === 'SpriteJSON' || resourceType === 'SpriteImage') {
         // Transformation for Sprite
@@ -218,6 +232,15 @@ export default class MapMapboxGl extends React.Component {
         inspect,
         zoom: map.getZoom()
       });
+
+      if(bbox){
+        map.fitBounds([
+          [bbox[0], bbox[1]],
+          [bbox[2], bbox[3]]
+        ], {
+          zoom: 19
+        })
+      }
     })
 
     map.on("data", e => {

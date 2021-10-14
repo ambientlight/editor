@@ -129,7 +129,9 @@ function stripAccessTokens(mapStyle) {
 }
 
 /** Azure Maps Parameters */
-const azMapsDomain = 'atlas.microsoft.com';
+// us prefix so creator is sounds without additional logic
+const azMapsDomain = 'us.atlas.microsoft.com';
+const globalAzMapsDomain = 'atlas.microsoft.com';
 const azMapsStylingPath = 'styling';
 const azMapsLanguage = 'en-US';
 const azMapsView = 'Auto';
@@ -155,15 +157,16 @@ function toAzureMapGlyphs(glyphs) {
                +`?api-version=${apiVersion}`;
 }
 
-function toAzureMapSourceUrl(sourceUrl, subscriptionKey) {
+function toAzureMapSourceUrl(sourceUrl, subscriptionKey, tilesetId) {
   if (sourceUrl.includes('{{azMapsDomain}}') === false) return sourceUrl;
   return sourceUrl.replace('{{azMapsDomain}}', azMapsDomain)
                   .replace('{{azMapsLanguage}}', azMapsLanguage)
                   .replace('{{azMapsView}}', azMapsView)
+                  .replace('{tilesetId}', tilesetId)
                   +'&subscription-key=' + subscriptionKey;
 }
 
-function toAzureMapsStyle (originalStyle, subscriptionKey) {
+function toAzureMapsStyle (originalStyle, subscriptionKey, tilesetId) {
 
   const style = cloneDeep(originalStyle);
 
@@ -173,11 +176,16 @@ function toAzureMapsStyle (originalStyle, subscriptionKey) {
   for (const sourceKey in style['sources']) {
     const source = style.sources[sourceKey];
     if (sourceKey === 'vectorTiles' || sourceKey === 'satelliteSource') {
-      source.url = toAzureMapSourceUrl(source.url, subscriptionKey)
+      source.url = toAzureMapSourceUrl(source.url, subscriptionKey, tilesetId)
     } else {
-      source.tiles = source.tiles.map(url => toAzureMapSourceUrl(url, subscriptionKey));
+      source.tiles = source.tiles.map(url => toAzureMapSourceUrl(url, subscriptionKey, tilesetId));
     }
   }
+
+  // hack: for now
+  style.layers.filter(layer => layer.layout !== undefined).forEach(layer => {
+    layer.layout.visibility = 'visible'
+  });
 
   return style;
 }
@@ -201,4 +209,5 @@ export default {
   toAzureMapGlyphs,
   toAzureMapSourceUrl,
   azMapsDomain,
+  globalAzMapsDomain
 }
