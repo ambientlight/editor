@@ -6,6 +6,7 @@ var HtmlWebpackInlineSVGPlugin = require('html-webpack-inline-svg-plugin');
 var WebpackCleanupPlugin = require('webpack-cleanup-plugin');
 var BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 var CopyWebpackPlugin = require('copy-webpack-plugin');
+var DefineWebpackPlugin = require('webpack').DefinePlugin;
 var artifacts = require("../test/artifacts");
 
 var OUTPATH = artifacts.pathSync("/build");
@@ -53,7 +54,7 @@ module.exports = {
         from: './src/manifest.json',
         to: 'manifest.json'
     }
-  ]),
+    ]),
     new BundleAnalyzerPlugin({
       analyzerMode: 'static',
       defaultSizes: 'gzip',
@@ -61,6 +62,12 @@ module.exports = {
       generateStatsFile: true,
       reportFilename: 'bundle-stats.html',
       statsFilename: 'bundle-stats.json',
+    }),
+    new DefineWebpackPlugin({
+      ENVIRONMENT: JSON.stringify({
+        tilesetId: '',
+        subscriptionKey: ''
+      })
     })
   ]
 };
