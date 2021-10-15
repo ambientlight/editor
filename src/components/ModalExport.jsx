@@ -12,9 +12,12 @@ import Modal from './Modal'
 import {MdFileDownload} from 'react-icons/md'
 import style from '../libs/style'
 import fieldSpecAdditional from '../libs/field-spec-additional'
+import composeHtml from '../libs/compose-html'
 
 
 const MAPBOX_GL_VERSION = pkgLockJson.dependencies["mapbox-gl"].version;
+
+
 
 
 export default class ModalExport extends React.Component {
@@ -52,33 +55,10 @@ export default class ModalExport extends React.Component {
   downloadHtml() {
     const tokenStyle = this.tokenizedStyle();
     const htmlTitle = this.props.mapStyle.name || "Map";
-    const html = `<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8" />
-  <title>${htmlTitle}</title>
-  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <script src="https://api.mapbox.com/mapbox-gl-js/v${MAPBOX_GL_VERSION}/mapbox-gl.js"></script>
-  <link href="https://api.mapbox.com/mapbox-gl-js/v${MAPBOX_GL_VERSION}/mapbox-gl.css" rel="stylesheet" />
-  <style>
-    body { margin: 0; padding: 0; }
-    #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-  </style>
-</head>
-<body>
-  <div id="map"></div>
-  <script>
-      mapboxgl.accessToken = 'access_token';
-      const map = new mapboxgl.Map({
-         container: 'map',
-         style: ${tokenStyle},
-      });
-      map.addControl(new mapboxgl.NavigationControl());
-  </script>
-</body>
-</html>
-`;
 
+    console.log(this.props.mapStyle);
+
+    const html = composeHtml(this.props.mapStyle);
     const blob = new Blob([html], {type: "text/html;charset=utf-8"});
     const exportName = this.exportName();
     saveAs(blob, exportName + ".html");
@@ -113,12 +93,12 @@ export default class ModalExport extends React.Component {
     >
 
       <section className="maputnik-modal-section">
-        <h1>Download Style</h1>
+        <h1>Export as .json style or .html</h1>
         <p>
-          Download a JSON style to your computer.
+          Download a JSON style or ready-to-use WebSDK html sample.
         </p>
 
-        <div>
+        {/* <div>
           <FieldString
             label={fieldSpecAdditional.maputnik.mapbox_access_token.label}
             fieldSpec={fieldSpecAdditional.maputnik.mapbox_access_token}
@@ -137,7 +117,7 @@ export default class ModalExport extends React.Component {
             value={(this.props.mapStyle.metadata || {})['maputnik:thunderforest_access_token']}
             onChange={this.changeMetadataProperty.bind(this, "maputnik:thunderforest_access_token")}
           />
-        </div>
+        </div> */}
 
         <div className="maputnik-modal-export-buttons">
           <InputButton
