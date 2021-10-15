@@ -18,7 +18,7 @@ const readAsset = (keyFileName) => {
   try {
     const subExists = fs.existsSync(keyFileName)
     if (subExists) {
-      return fs.readFileSync(keyFileName, 'utf8')
+      return fs.readFileSync(keyFileName, 'utf8').trim()
     }
   } catch(err) {
     console.error(err)
