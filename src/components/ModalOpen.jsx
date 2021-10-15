@@ -97,6 +97,7 @@ export default class ModalOpen extends React.Component {
       /* Azure Maps State */
 
       subscriptionKey: ENVIRONMENT.subscriptionKey,
+      externalKey: ENVIRONMENT.subscriptionKey,
 
       // Tilesets
       tilesets: [],
@@ -350,10 +351,8 @@ export default class ModalOpen extends React.Component {
   componentDidUpdate = () => {
     const metadata = this.props.mapStyle.metadata || {};
     const subscriptionKey = metadata['maputnik:azuremaps_subscription_key'] || ENVIRONMENT.subscriptionKey;
-
-    // hotfix
-    if(this.state.subscriptionKey !== subscriptionKey){
-      this.setState({ subscriptionKey })
+    if(this.state.externalKey !== subscriptionKey){
+      this.setState({ externalKey: subscriptionKey })
       this.resolveTilesets(subscriptionKey);
     }
   }
@@ -389,7 +388,7 @@ export default class ModalOpen extends React.Component {
 
   render() {
     const metadata = this.props.mapStyle.metadata || {};
-    const subscriptionKey = this.state.subscriptionKey;
+    const subscriptionKey = this.state.subscriptionKey || this.state.externalKey;
     const tilesetId = this.state.selectedTilesetId;
 
     let styleOptions = [];
@@ -470,6 +469,7 @@ export default class ModalOpen extends React.Component {
                 value={subscriptionKey}
                 disabled={false}
                 onInput={subscriptionKey => {
+                  console.log(subscriptionKey)
                   this.setState({ subscriptionKey })
                   this.resolveTilesets(subscriptionKey)
                 }}
