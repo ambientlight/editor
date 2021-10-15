@@ -8,11 +8,13 @@ import InputUrl from './InputUrl'
 import InputString from './InputString'
 import InputSelect from './InputSelect'
 
-import {MdFileUpload} from 'react-icons/md'
-import {MdAddCircleOutline} from 'react-icons/md'
+import {MdAddCircleOutline, MdDelete, MdFileUpload, MdCheckCircle, MdRadioButtonUnchecked, MdCached} from 'react-icons/md'
 
 import style from '../libs/style.js'
 import publicStyles from '../config/styles.json'
+
+import AzureMapsClientV2 from '../clients/azureMapsClientV2'
+import { readFileAsArrayBuffer } from '../libs/file'
 
 class PublicStyle extends React.Component {
   static propTypes = {
@@ -45,9 +47,44 @@ class PublicStyle extends React.Component {
   }
 }
 
+const progressInitState = {
+  data: {
+    status: "Waiting",
+    operationId: "",
+    udid: ""
+  },
+  conversion: {
+    status: "Waiting",
+    operationId: "",
+    conversionId: ""
+  },
+  dataset: {
+    status: "Waiting",
+    operationId: "",
+    datasetId: ""
+  },
+  tileset: {
+    status: "Waiting",
+    operationId: "",
+    tilesetId: ""
+  }
+};
+
+const isUploadIdle = state =>
+  [state.data.status, state.conversion.status, state.dataset.status, state.tileset.status]
+    .reduce((isIdle, status) => isIdle && status === 'Waiting', true);
+
+const uploadStatus = state =>
+  state.data.status === "Running" ? "uploading..."
+  : state.conversion.status === "Running" ? "converting..."
+  : state.dataset.status === "Running" ? "creating dataset..."
+  : state.tileset.status === "Running" ? "creating tileset..."
+  : "done";
+
 export default class ModalOpen extends React.Component {
   static propTypes = {
     isOpen: PropTypes.bool.isRequired,
+    isInitialVisit: PropTypes.bool,
     onOpenToggle: PropTypes.func.isRequired,
     onStyleOpen: PropTypes.func.isRequired,
     mapStyle: PropTypes.object
@@ -65,12 +102,70 @@ export default class ModalOpen extends React.Component {
       tilesets: [],
       selectedTilesetId: "",
 
-      customStyleset: null
+      customStyleset: null,
+      ...progressInitState
     };
 
     this.resolveTilesets(this.state.subscriptionKey);
+    this.client = null;
   }
 
+  initClient = (subscriptionKey) => {
+    this.client = new AzureMapsClientV2(subscriptionKey);
+  }
+
+  resetProgressState = () => {
+    this.setState(progressInitState)
+  }
+
+  onDWGUpload = async (_, files) => {
+    this.resetProgressState();
+    this.initClient(this.state.subscriptionKey);
+    const [_e, file] = files[0];
+
+    this.setState({ data: { ...this.state.data, status: "Running" }});
+    const arrayBuffer = await readFileAsArrayBuffer(file);
+    const { resourceId: udid } = await this.upload(arrayBuffer);
+    this.setState({ data: { ...this.state.data, status: "Succeeded", udid }});
+
+    this.setState({ conversion: { ...this.state.conversion, status: "Running" }});
+    const { resourceId: conversionId} = await this.convert(udid);
+    this.setState({ conversion: { ...this.state.conversion, status: "Succeeded", conversionId }});
+
+    this.setState({ dataset: { ...this.state.dataset, status: "Running" }});
+    const { resourceId: datasetId} = await this.createDataset(conversionId);
+    this.setState({ dataset: { ...this.state.dataset, status: "Succeeded", datasetId }});
+
+    this.setState({ tileset: { ...this.state.tileset, status: "Running" }});
+    const { resourceId: tilesetId} = await this.createTileset(datasetId);
+    this.setState({ tileset: { ...this.state.tileset, status: "Succeeded", tilesetId }});
+
+    this.resolveTilesets(this.state.subscriptionKey, tilesetId);
+  }
+
+  upload = async (arrayBuffer) => {
+    const response = await this.client.uploadPackage(arrayBuffer);
+    this.setState({ data: { ...this.state.data, operationId: response.operationId }});
+    return this.client.getOperationStatusUntilSucceed("data", response.operationId, 1000);
+  }
+
+  convert = async (udid) => {
+    const response = await this.client.convertPackage(udid);
+    this.setState({ conversion: { ...this.state.conversion, operationId: response.operationId }});
+    return this.client.getOperationStatusUntilSucceed("conversion", response.operationId, 1000);
+  }
+
+  createDataset = async (conversionid) => {
+    const response = await this.client.createDataset(conversionid);
+    this.setState({ dataset: { ...this.state.dataset, operationId: response.operationId }});
+    return this.client.getOperationStatusUntilSucceed("dataset", response.operationId, 1000);
+  }
+
+  createTileset = async (datasetId) => {
+    const response = await this.client.createTileset(datasetId);
+    this.setState({ tileset: { ...this.state.tileset, operationId: response.operationId }});
+    return this.client.getOperationStatusUntilSucceed("tileset", response.operationId, 1000);
+  }
 
   clearError() {
     this.setState({
@@ -263,7 +358,7 @@ export default class ModalOpen extends React.Component {
     }
   }
 
-  resolveTilesets = (key) => {
+  resolveTilesets = (key, selectedTilesetId) => {
     const subscriptionKey = key.trim()
     if(subscriptionKey.length != 43){ return; }
 
@@ -274,6 +369,7 @@ export default class ModalOpen extends React.Component {
       .then(data =>
         this.setState({
           tilesets: [{ description: '(Please select)', tilesetId: '' }, ...data.tilesets],
+          selectedTilesetId,
           error: null
         }))
       .catch(error => {
@@ -337,6 +433,12 @@ export default class ModalOpen extends React.Component {
       );
     }
 
+    const progressIcons = {
+      "Waiting": <MdRadioButtonUnchecked />,
+      "Running": <MdCached className="spinner" />,
+      "Succeeded": <MdCheckCircle />
+    };
+
     let wellcomeMessage = this.props.isInitialVisit ? 'Welcome to Azure Maps Maputnik style editor!' : 'Open Style';
 
     return  (
@@ -386,7 +488,7 @@ export default class ModalOpen extends React.Component {
                 }}
                 value={this.state.selectedTilesetId}
               />
-              <div style={{ display: 'flex' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 {/* <InputButton
                   data-wd-key="modal:open.tileset.button"
                   type="button"
@@ -395,9 +497,22 @@ export default class ModalOpen extends React.Component {
                   disabled={!subscriptionKey || !this.state.selectedTilesetId}
                 >Load creator style</InputButton> */}
 
-                <FileReaderInput className="maputnik-big-button" disabled={true} tabIndex="-1" aria-label="Style file" style={{ marginLeft: '8px' }}>
-                  <InputButton className="maputnik-upload-button"><MdFileUpload /> Upload DWG Package</InputButton>
-                </FileReaderInput>
+                <div style={{ display: 'flex' }}>
+                  <FileReaderInput onChange={this.onDWGUpload} className="maputnik-big-button" tabIndex="-1" aria-label="Style file" style={{ marginRight: '8px' }}>
+                    <InputButton className="maputnik-upload-button"><MdFileUpload /> Upload DWG Package</InputButton>
+                  </FileReaderInput>
+
+                  <p style={{ paddingTop: '16px', display: isUploadIdle(this.state) ? 'none' : 'initial' }}>
+                    { uploadStatus(this.state) }
+                  </p>
+                </div>
+
+                <div className="progress-icons" style={{ display: isUploadIdle(this.state) ? 'none' : 'initial' }}>
+                  {progressIcons[this.state.data.status]}
+                  {progressIcons[this.state.conversion.status]}
+                  {progressIcons[this.state.dataset.status]}
+                  {progressIcons[this.state.tileset.status]}
+                </div>
               </div>
             </section>
 
