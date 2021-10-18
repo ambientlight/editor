@@ -177,7 +177,7 @@ function toAzureMapsStyle (originalStyle, subscriptionKey, tilesetId) {
     const source = style.sources[sourceKey];
     if (sourceKey === 'vectorTiles' || sourceKey === 'satelliteSource') {
       source.url = toAzureMapSourceUrl(source.url, subscriptionKey, tilesetId)
-    } else {
+    } else if('tiles' in source) {
       source.tiles = source.tiles.map(url => toAzureMapSourceUrl(url, subscriptionKey, tilesetId));
     }
   }
