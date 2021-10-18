@@ -91,7 +91,7 @@ module.exports = {
     new webpack.NoEmitOnErrorsPlugin(),
     new webpack.HotModuleReplacementPlugin(),
     new HtmlWebpackPlugin({
-      title: 'Maputnik',
+      title: 'Azure Maps Maputnik',
       template: './src/template.html'
     }),
     new HtmlWebpackInlineSVGPlugin({
@@ -101,6 +101,14 @@ module.exports = {
       {
         from: './src/manifest.json',
         to: 'manifest.json'
+      },
+      {
+        from: './src/favicon.png',
+        to: 'favicon.png'
+      },
+      {
+        from: './src/favicon.svg',
+        to: 'favicon.svg'
       }
     ]),
     new DefineWebpackPlugin({
