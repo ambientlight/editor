@@ -1,6 +1,6 @@
 <img width="200" alt="Maputnik logo" src="https://cdn.jsdelivr.net/gh/maputnik/design/logos/logo-color.png" />
 
-# Maputnik
+# Azure Maps Maputnik
 [![GitHub CI status](https://github.com/maputnik/editor/workflows/ci/badge.svg)][github-action-ci]
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)][license]
 
