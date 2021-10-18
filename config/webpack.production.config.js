@@ -44,7 +44,7 @@ module.exports = {
     }),
     new HtmlWebpackPlugin({
       template: './src/template.html',
-      title: 'Maputnik'
+      title: 'Azure Maps Maputnik'
     }),
     new HtmlWebpackInlineSVGPlugin({
       runPreEmit: true,
@@ -53,7 +53,15 @@ module.exports = {
       {
         from: './src/manifest.json',
         to: 'manifest.json'
-    }
+      },
+      {
+        from: './src/favicon.png',
+        to: 'favicon.png'
+      },
+      {
+        from: './src/favicon.svg',
+        to: 'favicon.svg'
+      }
     ]),
     new BundleAnalyzerPlugin({
       analyzerMode: 'static',
