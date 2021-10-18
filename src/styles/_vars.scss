@@ -19,11 +19,11 @@ $font-size-6: 12px;
 $font-family: Roboto, sans-serif;
 
 $toolbar-height: 40px;
-$toolbar-offset: 0;
+$toolbar-offset: 10px;
 
-$layout-list-width: 200px;
+$layout-list-width: 218px;
 $layout-editor-width: 370px;
-$layout-map-width: calc(100% - #{$layout-list-width + $layout-editor-width});
+$layout-map-width: calc(100% - #{$layout-list-width});
 
 // 'menu-down' from 'https://materialdesignicons.com/'
 // See <https://github.com/Templarian/MaterialDesign/blob/master/LICENSE>

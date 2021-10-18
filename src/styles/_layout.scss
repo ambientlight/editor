@@ -17,23 +17,37 @@
   &-list {
     position: fixed;
     bottom: 0;
-    height: calc(100% - #{$toolbar-height + $toolbar-offset});
-    top: $toolbar-height + $toolbar-offset;
+    height: calc(100% - #{$toolbar-height});
+    top: $toolbar-height;
     left: 0;
     z-index: 3;
-    width: 200px;
+    width: 220px;
     background-color: $color-black;
   }
 
   &-drawer {
     position: fixed;
-    bottom: 0;
-    height: calc(100% - #{$toolbar-height + $toolbar-offset});
-    top: $toolbar-height + $toolbar-offset;
-    left: 200px;
+    min-height: 48px;
+    max-height: calc(100% - #{$toolbar-height + $toolbar-offset + 32px});
+    top: $toolbar-height + $toolbar-offset + 16px;
+    left: 232px;
     z-index: 1;
     width: 370px;
-    background-color: $color-black;
+    background-color: #191B20;
+    border-radius: 5px;
+    overflow: hidden;
+    opacity: 1s;
+    transition: opacity .75s ease-in-out;
+    -moz-transition: opacity .75s ease-in-out;
+    -webkit-transition: opacity .75s ease-in-out;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+    
+    &:hover {
+      opacity: 1;
+      transition: opacity .563s ease-in-out;
+      -moz-transition: opacity .563s ease-in-out;
+      -webkit-transition: opacity .563s ease-in-out;
+    }
   }
 
   &-bottom {

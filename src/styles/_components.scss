@@ -3,10 +3,10 @@
   background: white;
   display: flex;
   position: fixed !important;
-  top: $toolbar-height + $toolbar-offset;
+  top: 0;
   right: 0;
   bottom: 0;
-  height: calc(100% - #{$toolbar-height + $toolbar-offset});
+  height: 100%;
   width: $layout-map-width;
 
   &--error {

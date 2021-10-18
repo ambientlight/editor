@@ -438,7 +438,7 @@ export default class ModalOpen extends React.Component {
       "Succeeded": <MdCheckCircle />
     };
 
-    let wellcomeMessage = this.props.isInitialVisit ? 'Welcome to Azure Maps Maputnik style editor!' : 'Open Style';
+    let welcomeMessage = this.props.isInitialVisit ? 'Welcome to Azure Maps Maputnik style editor!' : 'Open Style';
 
     return  (
       <div>
@@ -446,7 +446,7 @@ export default class ModalOpen extends React.Component {
           data-wd-key="modal:open"
           isOpen={this.props.isOpen}
           onOpenToggle={() => this.onOpenToggle()}
-          title={wellcomeMessage}
+          title={welcomeMessage}
         >
           {errorElement}
 

@@ -236,6 +236,14 @@ export default class LayerEditor extends React.Component {
     })
   }
 
+  componentDidUpdate = () => {
+    if (document.getElementById('maputnik-layout-drawer')) {
+      const editorHeight = (document.getElementById('maputnik-layer-editor')?.offsetHeight || 0) + 'px'
+      document.getElementById('maputnik-layout-drawer').style.height = editorHeight
+      document.getElementById('maputnik-layout-drawer').setAttribute('height', 'width:' + editorHeight)
+    }
+  }
+
   render() {
     const groupIds = [];
     const layerType = this.props.layer.type
@@ -290,14 +298,14 @@ export default class LayerEditor extends React.Component {
       items[id].handler();
     }
 
-    return <section className="maputnik-layer-editor"
+    return <section id="maputnik-layer-editor" className="maputnik-layer-editor"
       role="main"
       aria-label="Layer editor"
     >
       <header>
         <div className="layer-header">
           <h2 className="layer-header__title">
-            Layer: {formatLayerId(this.props.layer.id)}
+            {formatLayerId(this.props.layer.id)}
           </h2>
           <div className="layer-header__info">
             <Wrapper
@@ -328,7 +336,6 @@ export default class LayerEditor extends React.Component {
       <Accordion
         allowMultipleExpanded={true}
         allowZeroExpanded={true}
-        preExpanded={groupIds}
       >
         {groups}
       </Accordion>

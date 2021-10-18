@@ -1,3 +1,3 @@
 export function formatLayerId (id) {
-  return id === "" ? "[empty_string]" : `'${id}'`;
+  return id === "" ? "[empty_string]" : `${id}`;
 }

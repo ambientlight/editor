@@ -5,22 +5,24 @@
   width: 100%;
   z-index: 100;
   left: 0;
-  top: $toolbar-offset;
-  background-color: $color-black;
+  top: 0;
+  background-color: transparent;
 }
 
 .maputnik-toolbar-logo-container {
   position: relative;
+  width: 220px;
+  background-color: $color-black;
+  padding: 10px 9px 10px 9px;
+  height: 40px;
 }
 
 .maputnik-toolbar-logo {
   text-decoration: none;
   display: block;
   flex: 0 0 190px;
-  width: 200px;
   text-align: left;
-  background-color: $color-black;
-  padding: $margin-2;
+  
   height: $toolbar-height;
   position: relative;
   overflow: hidden;
@@ -28,6 +30,7 @@
   h1 {
     display: inline;
     line-height: 26px;
+    font-size: 16px;
   }
 
   svg {
@@ -39,21 +42,27 @@
 
 .maputnik-toolbar-link {
   vertical-align: top;
-  height: $toolbar-height;
-  display: inline-block;
-  padding: $margin-3;
+  height: 28px;
+  display: flex;
+
+  padding: 4px 9px 4px 9px;
   font-size: $font-size-5;
   cursor: pointer;
-  color: $color-white;
+  color: #A4A4A4;
   text-decoration: none;
-  line-height: 20px;
-
+  background-color: #191B20;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+  transition: all 0.3s cubic-bezier(.25,.8,.25,1); 
+  margin-left: 12px;
+  border-radius: 5px;
+  align-items: center;
   h1 {
     position: relative;
   }
 
   &:hover {
-    background-color: $color-midgray;
+    color: $color-white;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
   }
 }
 
@@ -91,13 +100,13 @@
 }
 
 .maputnik-toolbar-action {
-  background: inherit;
+  background: $color-black;
   border-width: 0;
   @extend .maputnik-toolbar-link;
 }
 
 .maputnik-toolbar-select {
-  background: inherit;
+  background: $color-midgray;
   border-width: 0;
   @extend .maputnik-toolbar-link;
 
@@ -126,9 +135,10 @@
 }
 
 .maputnik-toolbar__actions {
+  display: flex;
   white-space: nowrap;
   flex: 1;
-  overflow-y: auto;
+  margin: 10px 0 12px 0;
 }
 
 .maputnik-toolbar-skip {

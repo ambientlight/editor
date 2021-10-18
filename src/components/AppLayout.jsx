@@ -23,12 +23,17 @@ class AppLayout extends React.Component {
   }
 
   render() {
+    const drawerHeight = document.getElementById('maputnik-layer-editor')?.offsetHeight || 0
+
     return <div className="maputnik-layout">
       {this.props.toolbar}
       <div className="maputnik-layout-list">
         {this.props.layerList}
       </div>
-      <div className="maputnik-layout-drawer">
+      <div
+        id="maputnik-layout-drawer" 
+        className="maputnik-layout-drawer" 
+        style={{height: drawerHeight}}>
         <ScrollContainer>
           {this.props.layerEditor}
         </ScrollContainer>

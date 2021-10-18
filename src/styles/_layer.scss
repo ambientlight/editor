@@ -4,6 +4,7 @@
   overflow: auto;
   display: flex;
   flex-direction: column;
+  padding: 9px;
 
   &-header {
     padding: $margin-2 $margin-2 $margin-3;
@@ -34,7 +35,7 @@
   }
 
   &-item-handle {
-    flex: 1;
+    max-width: 130px;
     display: flex;
     cursor: grab;
 
@@ -195,7 +196,7 @@
   &__button {
     flex: 1;
     display: flex;
-    padding: $margin-2;
+    padding: 5px 12px 5px 12px;
 
     &__icon {
       fill: white;
@@ -293,7 +294,7 @@
 
 .layer-header {
   display: flex;
-  padding: 6px;
+  padding: 9px 12px 9px 12px;
   background: $color-black;
 
   &__title {

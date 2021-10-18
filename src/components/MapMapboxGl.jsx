@@ -90,7 +90,6 @@ export default class MapMapboxGl extends React.Component {
     if(!this.state.map) return
     const metadata = props.mapStyle.metadata || {}
     MapboxGl.accessToken = metadata['maputnik:mapbox_access_token'] || tokens.mapbox
-
     //Mapbox GL now does diffing natively so we don't need to calculate
     //the necessary operations ourselves!
     const subscriptionKey = metadata['maputnik:azuremaps_subscription_key'] || ENVIRONMENT.subscriptionKey;
@@ -110,7 +109,7 @@ export default class MapMapboxGl extends React.Component {
         [bbox[2], bbox[3]]
       ], {
         zoom: 19
-      })
+      }, () => this.state.map.setPitch(30, {duration: 1000}))
     }
   }
 
