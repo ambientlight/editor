@@ -20,16 +20,16 @@ jobs:
     - name: Upload to blob storage
       uses: azure/CLI@v1
       with:
-        azcliversion: 2.0.72
+        azcliversion: 2.38.0
         inlineScript: |
-            az storage blob upload-batch --account-name styleeditor --auth-mode key -d '$web' -s ./build/build
+            az storage blob upload-batch --account-name maputnik --auth-mode key -d '$web' -s ./build/build
     - name: Purge CDN endpoint
       uses: azure/CLI@v1
       with:
-        azcliversion: 2.0.72
+        azcliversion: 2.38.0
         inlineScript: |
-           az cdn endpoint purge --content-paths  "/*" --profile-name maps-cdn --name style-editor --resource-group maps
+            az network front-door purge-endpoint --content-paths index.html --name maputnik-cdn --resource-group maputnik
     - name: logout
       run: |
-            az logout
+          az logout
       if: always()
